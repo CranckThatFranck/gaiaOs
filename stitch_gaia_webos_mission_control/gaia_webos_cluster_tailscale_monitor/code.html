@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Gaia WebOS</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "secondary-fixed-dim": "#ddb7ff", "on-primary-fixed-variant": "#004f53", "on-secondary-fixed-variant": "#6900b3", "secondary-fixed": "#f0dbff", "surface": "#111319", "on-primary-fixed": "#002022", "secondary": "#ddb7ff", "on-secondary-container": "#d6a9ff", "on-tertiary-fixed": "#3e0022", "surface-container-highest": "#33353b", "surface-container-low": "#191c21", "primary-fixed-dim": "#00dce6", "on-error": "#690005", "inverse-on-surface": "#2e3036", "inverse-surface": "#e2e2ea", "on-tertiary-fixed-variant": "#8c0053", "secondary-container": "#6f00be", "surface-container-high": "#282a30", "on-secondary-fixed": "#2c0051", "primary-container": "#00f2fe", "surface-container-lowest": "#0c0e13", "error-container": "#93000a", "on-primary-container": "#006a70", "tertiary-container": "#ffcede", "tertiary-fixed-dim": "#ffb0cd", "inverse-primary": "#00696f", "primary": "#e0fdff", "tertiary": "#fff5f6", "on-secondary": "#490080", "on-background": "#e2e2ea", "on-primary": "#00373a", "on-tertiary-container": "#b6156f", "surface-bright": "#37393f", "surface-variant": "#33353b", "surface-dim": "#111319", "background": "#111319", "primary-fixed": "#6ff6ff", "error": "#ffb4ab", "on-surface": "#e2e2ea", "on-tertiary": "#640039", "surface-tint": "#00dce6", "on-surface-variant": "#b9cacb", "outline": "#849495", "outline-variant": "#3a494b", "surface-container": "#1d2025", "on-error-container": "#ffdad6", "tertiary-fixed": "#ffd9e4" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-sm": "0.5rem", "space-md": "1rem", "space-lg": "1.5rem", "space-xs": "0.25rem", "margin-lg": "2rem", "gutter-lg": "1.5rem", "gutter": "1rem", "margin": "1rem", "space-xl": "2.5rem" }, "fontFamily": { "display-hero-mobile": [ "Plus Jakarta Sans" ], "telemetry-code": [ "JetBrains Mono" ], "body-md": [ "Inter" ], "body-sm": [ "Inter" ], "label-caps": [ "JetBrains Mono" ], "headline-lg-mobile": [ "Plus Jakarta Sans" ], "headline-sm": [ "Plus Jakarta Sans" ], "headline-lg": [ "Plus Jakarta Sans" ], "body-lg": [ "Inter" ], "display-hero": [ "Plus Jakarta Sans" ], "telemetry-micro": [ "JetBrains Mono" ], "headline-md": [ "Plus Jakarta Sans" ] }, "fontSize": { "display-hero-mobile": [ "36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" } ], "telemetry-code": [ "13px", { "lineHeight": "18px", "letterSpacing": "-0.01em", "fontWeight": "500" } ], "body-md": [ "14px", { "lineHeight": "20px", "fontWeight": "400" } ], "body-sm": [ "12px", { "lineHeight": "16px", "fontWeight": "400" } ], "label-caps": [ "10px", { "lineHeight": "12px", "letterSpacing": "0.08em", "fontWeight": "600" } ], "headline-lg-mobile": [ "24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" } ], "headline-sm": [ "16px", { "lineHeight": "24px", "fontWeight": "600" } ], "headline-lg": [ "32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600" } ], "body-lg": [ "16px", { "lineHeight": "24px", "fontWeight": "400" } ], "display-hero": [ "56px", { "lineHeight": "64px", "letterSpacing": "-0.03em", "fontWeight": "700" } ], "telemetry-micro": [ "11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "400" } ], "headline-md": [ "20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" } ] } } } };</script></head><body class="bg-surface font-body-md text-on-surface min-h-screen relative selection:bg-primary-container selection:text-on-primary-container"><div class="fixed inset-0 pointer-events-none z-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(111,0,190,0.18),rgba(17,19,25,0)),radial-gradient(ellipse_60%_60%_at_80%_100%,rgba(0,242,254,0.08),rgba(17,19,25,0))]"></div><aside class="fixed left-0 top-9 bottom-0 w-64 bg-surface-container-lowest/80 backdrop-blur-xl z-40 flex flex-col py-space-md"><div class="px-space-md mb-space-md flex items-center justify-between"><span class="font-label-caps text-label-caps uppercase text-on-surface-variant">Active Deck</span><span class="flex h-2 w-2 relative"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-container opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-primary-fixed-dim"></span></span></div><nav class="flex-1 px-space-sm space-y-space-xs" data-active-classes="bg-surface-container-high text-primary font-body-sm"><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all font-body-sm" data-path="gemini-agent-chat" href="#"><span class="material-symbols-outlined text-space-lg">smart_toy</span><span>Agent Matrix</span></a><a aria-current="page" class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg transition-all bg-surface-container-high text-primary font-body-sm" data-path="mesh-nodes" href="#"><span class="material-symbols-outlined text-space-lg">hub</span><span>Mesh Topology</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all font-body-sm" data-path="pty-terminal" href="#"><span class="material-symbols-outlined text-space-lg">terminal</span><span>Mark v3 PTY</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all font-body-sm" data-path="finops-ai-insights" href="#"><span class="material-symbols-outlined text-space-lg">insights</span><span>FinOps Engine</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all font-body-sm" data-path="projects-catalog" href="#"><span class="material-symbols-outlined text-space-lg">folder_special</span><span>Workspace Catalog</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all font-body-sm" data-path="system-settings" href="#"><span class="material-symbols-outlined text-space-lg">settings</span><span>Kernel Config</span></a></nav><div class="px-space-md pt-space-md bg-surface-container-lowest/40"><div class="p-space-sm rounded-lg bg-surface-container/60"><div class="flex items-center justify-between mb-space-xs"><span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Kernel Fleet</span><span class="font-telemetry-micro text-telemetry-micro text-primary-fixed-dim">v4.19-orb</span></div><div class="w-full bg-surface-container-highest h-1 rounded-full overflow-hidden"><div class="bg-primary-container h-full w-3/4"></div></div></div></div></aside><div class="pl-64"><header class="fixed top-0 left-0 right-0 h-9 z-50 bg-surface-container-lowest/90 backdrop-blur-2xl shadow-[0_1px_8px_rgba(0,0,0,0.4)]"><div class="h-9 w-full px-space-md flex items-center justify-between"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-sm"><img alt="Gaia WebOS Core Logo" class="h-5 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCIHHts9moVBXNfgW__zoNFKdXhubEgvQMiag9Toanc75FX1nRvdB3PnibS5j_IhTvP8ALAIwJ6wk1-QXTjdw96zKU_B0RDrVJd4rC8n9k7hnq4WU-OnXvAlUr6hDFV9AidzwmlvEolAsmy6kTmjMsISNUsnHcJfvU49ii01vYzDp3a9Lc0pZuCTaI0HbG2l02awqv3Lz5U8eG0Jthg0l2Zda8LNOFrNuihiMael-uS_l-sLIRVhdjKgw"/><span class="font-headline-sm text-headline-sm text-primary tracking-wider">GAIA</span></div><span class="text-outline-variant font-telemetry-micro text-telemetry-micro">/</span><nav class="hidden sm:flex items-center gap-space-md" data-active-classes="text-primary font-body-sm"><a class="font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="gemini-agent-chat" href="#">Matrix</a><a aria-current="page" class="transition-colors text-primary font-body-sm" data-path="mesh-nodes" href="#">Tailscale</a><a class="font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="pty-terminal" href="#">Terminal</a><a class="font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="finops-ai-insights" href="#">FinOps</a><a class="font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="projects-catalog" href="#">Projects</a></nav></div><div class="flex items-center gap-space-md"><div class="hidden md:flex items-center gap-space-xs px-space-sm py-0.5 rounded-full bg-surface-container-high/60"><span class="material-symbols-outlined text-primary-fixed-dim text-sm">vpn_lock</span><span class="font-telemetry-micro text-telemetry-micro text-on-surface">100.90.55.5</span></div><div class="hidden lg:flex items-center gap-space-md font-telemetry-micro text-telemetry-micro text-on-surface-variant"><div class="flex items-center gap-space-xs"><span class="text-primary-fixed-dim font-bold">CPU</span><span>28%</span></div><div class="flex items-center gap-space-xs"><span class="text-secondary font-bold">RAM</span><span>6.2GB</span></div></div><div class="flex items-center gap-space-sm"><span class="font-telemetry-code text-telemetry-code text-on-surface font-semibold">21:42 UTC</span><img alt="Profile" class="w-6 h-6 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCX90SYJP6fZJRIiUxkUMhFOaLmRQtBII7ZPD5JZwCDnhU8Z24b3kC7Al81kW1Sb0YoSqNDScjeTeR9vuZkXTg_Lw4iQ_2TFq6vlkRIrIkKVt1ZeYAon_ExV9TcUFtQP2U3svum_2Cx0O7RBdOBYcLNJJ6vtUp7ty4eYZmJ8XSmf6vnU2AiHaKfHBYGHW0mK5NNsX_813-CoSoWesHSXBfdQ-mT6TRECqz2CTOuGGQzw6aHS_EGtj4uwQ"/></div></div></div></header><main class="relative w-full pt-9 pb-28 px-space-lg min-h-screen bg-transparent z-10"><div class="flex flex-col w-full">
+<!-- Window Frame / Stage Container -->
+<div class="relative w-full rounded-xl bg-surface-container-low/75 backdrop-blur-2xl shadow-xl overflow-hidden">
+<!-- Window Bar & Traffic Lights Header -->
+<div class="h-10 px-space-md bg-surface-container-lowest/90 flex items-center justify-between select-none">
+<div class="flex items-center gap-space-sm">
+<div class="flex items-center gap-2">
+<button class="w-3 h-3 rounded-full bg-[#FF5F56] flex items-center justify-center group focus:outline-none" title="Fechar Janela">
+<span class="material-symbols-outlined text-[9px] text-[#4a0002] opacity-0 group-hover:opacity-100 font-bold transition-opacity">close</span>
+</button>
+<button class="w-3 h-3 rounded-full bg-[#FFBD2E] flex items-center justify-center group focus:outline-none" title="Minimizar">
+<span class="material-symbols-outlined text-[9px] text-[#593d00] opacity-0 group-hover:opacity-100 font-bold transition-opacity">remove</span>
+</button>
+<button class="w-3 h-3 rounded-full bg-[#27C93F] flex items-center justify-center group focus:outline-none" title="Maximizar">
+<span class="material-symbols-outlined text-[9px] text-[#004710] opacity-0 group-hover:opacity-100 font-bold transition-opacity">add</span>
+</button>
+</div>
+<div class="h-4 w-px bg-surface-container-highest mx-space-xs"></div>
+<div class="flex items-center gap-space-xs font-telemetry-micro text-telemetry-micro text-on-surface-variant">
+<span class="material-symbols-outlined text-sm text-primary-fixed-dim">hub</span>
+<span>fabric.gaia.mesh</span>
+<span class="text-outline-variant">::</span>
+<span class="text-primary font-semibold">tailnet-alpha</span>
+</div>
+</div>
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-space-xs px-space-sm py-0.5 rounded-full bg-surface-container-high font-telemetry-micro text-telemetry-micro text-on-surface-variant">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container animate-pulse"></span>
+<span>DERP Relay: Frankfurt (19)</span>
+</div>
+<span class="font-telemetry-micro text-telemetry-micro text-outline">MTU 1280 (Encrypted)</span>
+</div>
+</div>
+<!-- Application Top Bar: Title, Search, Actions -->
+<div class="p-space-lg bg-surface-container-lowest/40 flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+<div>
+<div class="flex items-center gap-space-sm">
+<span class="font-label-caps text-label-caps uppercase text-primary-fixed-dim">Overlay VPN Telemetry</span>
+<span class="px-space-xs py-0.5 rounded text-[10px] font-label-caps uppercase bg-primary-container/20 text-primary font-semibold">Mesh Sync v2.4</span>
+</div>
+<div class="flex items-baseline gap-space-sm mt-space-xs">
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Tailscale Mesh Fabric</h1>
+<span class="font-telemetry-code text-telemetry-code text-primary-container font-semibold">(3/3 Nodes Active)</span>
+</div>
+</div>
+<!-- Action Controls -->
+<div class="flex items-center gap-space-md flex-wrap">
+<!-- Search Field -->
+<div class="relative min-w-[240px]">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-base">search</span>
+<input class="w-full pl-9 pr-3 py-1.5 rounded-lg bg-surface-container-lowest font-body-sm text-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:bg-surface-container transition-colors" placeholder="Filtrar nós por hostname, IP ou tag..." type="text"/>
+</div>
+<!-- Add Node CTA -->
+<button class="flex items-center gap-space-xs px-space-md py-2 rounded-lg bg-primary-container text-on-primary-container font-headline-sm text-body-sm shadow-[0_0_20px_rgba(0,242,254,0.35)] hover:shadow-[0_0_28px_rgba(0,242,254,0.55)] transition-all cursor-pointer">
+<span class="material-symbols-outlined text-base font-bold">add_circle</span>
+<span class="tracking-tight">+ Adicionar Novo Nó Tailscale</span>
+</button>
+</div>
+</div>
+<!-- Main Workspace Content: Node Grid Cards -->
+<div class="p-space-lg grid grid-cols-1 lg:grid-cols-3 gap-space-lg">
+<!-- CARD 1: Gateway (GCP Cloud Bridge) -->
+<div class="group relative rounded-xl bg-surface-container p-space-lg flex flex-col justify-between shadow-md hover:shadow-xl transition-all duration-300">
+<div class="absolute -top-12 right-0 w-32 h-32 rounded-full bg-primary-container/5 blur-2xl pointer-events-none"></div>
+<div>
+<!-- Node Header -->
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary-fixed-dim">
+<span class="material-symbols-outlined text-xl">router</span>
+</div>
+<div>
+<div class="flex items-center gap-space-xs">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">gateway</h3>
+<span class="material-symbols-outlined text-outline-variant text-sm" title="Subnet Router Enabled">alt_route</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">GCP Cloud Bridge (europe-west3)</p>
+</div>
+</div>
+<!-- Status Indicator -->
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-lowest">
+<span class="w-2 h-2 rounded-full bg-[#27C93F] shadow-[0_0_8px_#27C93F]"></span>
+<span class="font-telemetry-micro text-telemetry-micro uppercase text-on-surface font-semibold tracking-wider">Online</span>
+</div>
+</div>
+<!-- Metadata Pill Badges -->
+<div class="mt-space-md flex flex-wrap gap-space-xs font-telemetry-micro text-telemetry-micro">
+<span class="px-2 py-0.5 rounded bg-surface-container-lowest text-primary font-telemetry-code">100.90.55.1</span>
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant">Exit Node: Active</span>
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant">IPv4/IPv6 Dual</span>
+</div>
+<!-- Gauge and Vital Stats -->
+<div class="mt-space-lg grid grid-cols-2 gap-space-md items-center">
+<!-- CPU Circular Gauge -->
+<div class="p-space-sm rounded-lg bg-surface-container-lowest/70 flex items-center gap-space-sm">
+<div class="relative w-14 h-14 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<path class="text-surface-container-highest" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3.5"></path>
+<path class="text-primary-container" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="1, 100" stroke-linecap="round" stroke-width="3.5"></path>
+</svg>
+<span class="absolute font-telemetry-code text-telemetry-micro font-bold text-on-surface">0.6%</span>
+</div>
+<div>
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant block">CPU Idle</span>
+<span class="font-telemetry-micro text-telemetry-micro text-primary-fixed-dim">e2-micro</span>
+</div>
+</div>
+<!-- Latency Metric -->
+<div class="p-space-sm rounded-lg bg-surface-container-lowest/70 flex flex-col justify-center">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant">Direct Mesh Ping</span>
+<div class="flex items-baseline gap-1 mt-0.5">
+<span class="font-headline-md text-headline-md text-on-surface">12</span>
+<span class="font-telemetry-code text-telemetry-micro text-primary-container font-semibold">ms</span>
+</div>
+<span class="font-telemetry-micro text-telemetry-micro text-on-surface-variant">0.0% packet drop</span>
+</div>
+</div>
+<!-- Memory Bar -->
+<div class="mt-space-md p-space-sm rounded-lg bg-surface-container-lowest/60">
+<div class="flex justify-between items-center mb-1.5 font-telemetry-micro text-telemetry-micro">
+<span class="text-on-surface-variant uppercase font-label-caps">Memória RAM</span>
+<span class="text-on-surface"><span class="text-primary font-bold">3.0 GB livres</span> / 8.0 GB</span>
+</div>
+<div class="w-full h-1.5 rounded-full bg-surface-container-highest overflow-hidden">
+<div class="bg-primary-container h-full rounded-full w-[62.5%] shadow-[0_0_8px_#00f2fe]"></div>
+</div>
+</div>
+</div>
+<!-- Footer / Uptime -->
+<div class="mt-space-lg pt-space-sm bg-transparent flex items-center justify-between font-telemetry-micro text-telemetry-micro text-on-surface-variant">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-primary-fixed-dim">schedule</span>
+<span>Uptime: <strong class="text-on-surface">42d 18h 14m</strong></span>
+</div>
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-on-surface">Subnet: 10.142.0.0/20</span>
+</div>
+</div>
+<!-- CARD 2: ec2 (AWS Mark v3 Playground) with 1-Click Toggle -->
+<div class="group relative rounded-xl bg-surface-container p-space-lg flex flex-col justify-between shadow-md hover:shadow-xl transition-all duration-300">
+<div class="absolute -top-12 right-0 w-32 h-32 rounded-full bg-secondary-container/20 blur-2xl pointer-events-none"></div>
+<div>
+<!-- Node Header & Power Toggle -->
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-xl">cloud_sync</span>
+</div>
+<div>
+<div class="flex items-center gap-space-xs">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">ec2</h3>
+<span class="px-1.5 py-0.2 rounded text-[10px] font-label-caps bg-secondary-container/50 text-secondary-fixed">DEV-PLAYGROUND</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">AWS Mark v3 Playground (us-east-1)</p>
+</div>
+</div>
+<!-- Status Indicator -->
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-lowest transition-all" id="ec2-status-badge">
+<span class="w-2 h-2 rounded-full bg-[#27C93F] shadow-[0_0_8px_#27C93F]" id="ec2-status-dot"></span>
+<span class="font-telemetry-micro text-telemetry-micro uppercase text-on-surface font-semibold tracking-wider" id="ec2-status-text">Online</span>
+</div>
+</div>
+<!-- Metadata Pill Badges -->
+<div class="mt-space-md flex flex-wrap gap-space-xs font-telemetry-micro text-telemetry-micro">
+<span class="px-2 py-0.5 rounded bg-surface-container-lowest text-primary font-telemetry-code">100.90.55.2</span>
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant">m7i-flex.2xlarge</span>
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant">8 vCPU / 32 GB</span>
+</div>
+<!-- Interactive 1-Click State Controller Switch -->
+<div class="mt-space-md p-space-sm rounded-lg bg-surface-container-lowest/80 flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-lg">power_settings_new</span>
+<div class="leading-none">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant block">Controle de Energia AWS</span>
+<span class="font-telemetry-micro text-telemetry-micro text-on-surface" id="ec2-state-desc">Instância em Execução</span>
+</div>
+</div>
+<!-- Custom Switch Button -->
+<button class="relative w-14 h-7 rounded-full bg-primary-container flex items-center p-0.5 transition-all focus:outline-none shadow-[0_0_12px_rgba(0,242,254,0.4)] cursor-pointer" id="ec2-toggle-btn" onclick="toggleEC2Power()" title="Ligar / Desligar Instância">
+<div class="w-6 h-6 rounded-full bg-surface-container-lowest transform translate-x-7 transition-transform flex items-center justify-center" id="ec2-toggle-thumb">
+<span class="material-symbols-outlined text-[13px] text-primary-container font-bold" id="ec2-toggle-icon">bolt</span>
+</div>
+</button>
+</div>
+<!-- Gauges & Bandwidth Sparkline -->
+<div class="mt-space-md grid grid-cols-2 gap-space-md">
+<!-- CPU Gauge -->
+<div class="p-space-sm rounded-lg bg-surface-container-lowest/70 flex items-center gap-space-sm">
+<div class="relative w-14 h-14 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<path class="text-surface-container-highest" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3.5"></path>
+<path class="text-secondary" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="38.4, 100" stroke-linecap="round" stroke-width="3.5"></path>
+</svg>
+<span class="absolute font-telemetry-code text-telemetry-micro font-bold text-on-surface">38%</span>
+</div>
+<div>
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant block">CPU Util</span>
+<span class="font-telemetry-micro text-telemetry-micro text-secondary font-semibold">38.4%</span>
+</div>
+</div>
+<!-- Bandwidth Chart Sparkline -->
+<div class="p-space-sm rounded-lg bg-surface-container-lowest/70 flex flex-col justify-between">
+<div class="flex justify-between items-center">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant">Throughput</span>
+<span class="font-telemetry-micro text-telemetry-micro text-primary-fixed-dim">28.4 MB/s</span>
+</div>
+<!-- Real-time Sparkline SVG -->
+<div class="w-full h-8 flex items-end mt-1">
+<svg class="w-full h-full text-secondary" fill="none" viewbox="0 0 120 30">
+<path d="M0 24 L15 20 L30 27 L45 10 L60 14 L75 4 L90 18 L105 12 L120 8" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M0 24 L15 20 L30 27 L45 10 L60 14 L75 4 L90 18 L105 12 L120 8 L120 30 L0 30 Z" fill="currentColor" fill-opacity="0.12"></path>
+</svg>
+</div>
+</div>
+</div>
+<!-- Memory Usage Bar -->
+<div class="mt-space-md p-space-sm rounded-lg bg-surface-container-lowest/60">
+<div class="flex justify-between items-center mb-1.5 font-telemetry-micro text-telemetry-micro">
+<span class="text-on-surface-variant uppercase font-label-caps">Memória Utilizada</span>
+<span class="text-on-surface"><span class="text-secondary font-bold">14.2 GB</span> / 32.0 GB (44%)</span>
+</div>
+<div class="w-full h-1.5 rounded-full bg-surface-container-highest overflow-hidden">
+<div class="bg-secondary h-full rounded-full w-[44.3%] shadow-[0_0_8px_#ddb7ff]"></div>
+</div>
+</div>
+</div>
+<!-- Footer / Cost counter -->
+<div class="mt-space-lg pt-space-sm bg-transparent flex items-center justify-between font-telemetry-micro text-telemetry-micro text-on-surface-variant">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-secondary">payments</span>
+<span>Custo sob demanda: <strong class="text-on-surface">$0.382/hora</strong></span>
+</div>
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-on-surface">IAM: Gaia-Mesh-Role</span>
+</div>
+</div>
+<!-- CARD 3: notebook (Fedora Local Workstation) -->
+<div class="group relative rounded-xl bg-surface-container p-space-lg flex flex-col justify-between shadow-md hover:shadow-xl transition-all duration-300">
+<div class="absolute -top-12 right-0 w-32 h-32 rounded-full bg-primary/5 blur-2xl pointer-events-none"></div>
+<div>
+<!-- Node Header -->
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-xl">laptop_chromebook</span>
+</div>
+<div>
+<div class="flex items-center gap-space-xs">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">notebook</h3>
+<span class="material-symbols-outlined text-primary-fixed-dim text-sm" title="This Client Machine">verified_user</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Fedora Local Workstation (Kernel 6.8)</p>
+</div>
+</div>
+<!-- Status Indicator -->
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-lowest">
+<span class="w-2 h-2 rounded-full bg-[#27C93F] shadow-[0_0_8px_#27C93F]"></span>
+<span class="font-telemetry-micro text-telemetry-micro uppercase text-on-surface font-semibold tracking-wider">Online</span>
+</div>
+</div>
+<!-- Metadata Pill Badges -->
+<div class="mt-space-md flex flex-wrap gap-space-xs font-telemetry-micro text-telemetry-micro">
+<span class="px-2 py-0.5 rounded bg-surface-container-lowest text-primary font-telemetry-code">100.90.55.5</span>
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant">This Device</span>
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant">WireGuard MTU 1280</span>
+</div>
+<!-- WireGuard Cryptographic Tunnel Visualizer -->
+<div class="mt-space-lg p-space-sm rounded-lg bg-surface-container-lowest/80">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary-container text-base">vpn_key</span>
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant">Handshake Noise Protocol</span>
+</div>
+<span class="font-telemetry-micro text-telemetry-micro text-primary-fixed-dim">ChaCha20-Poly1305</span>
+</div>
+<!-- Encryption Diagram -->
+<div class="mt-space-sm flex items-center justify-between px-space-sm py-2 rounded bg-surface-container/80">
+<div class="text-center">
+<span class="font-telemetry-micro text-telemetry-micro text-on-surface-variant block">Local Enclave</span>
+<span class="font-telemetry-code text-[11px] text-primary font-semibold">100.90.55.5</span>
+</div>
+<div class="flex-1 mx-space-sm flex items-center justify-center relative">
+<div class="w-full h-0.5 bg-surface-container-highest"></div>
+<div class="absolute inset-x-4 flex justify-between">
+<span class="w-2 h-2 rounded-full bg-primary-container animate-ping"></span>
+<span class="material-symbols-outlined text-primary-fixed-dim text-xs">lock</span>
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+</div>
+</div>
+<div class="text-center">
+<span class="font-telemetry-micro text-telemetry-micro text-on-surface-variant block">Active Peer</span>
+<span class="font-telemetry-code text-[11px] text-secondary font-semibold">100.90.55.2</span>
+</div>
+</div>
+<div class="mt-space-xs flex justify-between items-center text-[10px] font-telemetry-micro text-outline">
+<span>Último re-key: há 42 segundos</span>
+<span>Keepalive: 25s</span>
+</div>
+</div>
+<!-- Hardware Telemetry -->
+<div class="mt-space-md grid grid-cols-2 gap-space-sm font-telemetry-micro text-telemetry-micro">
+<div class="p-space-sm rounded-lg bg-surface-container-lowest/60 flex items-center justify-between">
+<span class="text-on-surface-variant">Bateria / AC</span>
+<span class="text-on-surface font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-primary-container text-xs">battery_charging_full</span>
+                96%
+              </span>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container-lowest/60 flex items-center justify-between">
+<span class="text-on-surface-variant">Interface Wi-Fi</span>
+<span class="text-on-surface font-semibold">wlp2s0 (802.11ax)</span>
+</div>
+</div>
+</div>
+<!-- Footer / Local Node ID -->
+<div class="mt-space-lg pt-space-sm bg-transparent flex items-center justify-between font-telemetry-micro text-telemetry-micro text-on-surface-variant">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-primary">fingerprint</span>
+<span>Tailscale Node ID: <span class="text-on-surface">k48m-q021-99af</span></span>
+</div>
+<span class="text-primary-container font-semibold">Local Master</span>
+</div>
+</div>
+</div>
+<!-- Smart Insights & FinOps Carousel Bar -->
+<div class="p-space-lg bg-surface-container-lowest/70 border-t-0">
+<div class="flex items-center justify-between mb-space-md">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-secondary text-xl">auto_awesome</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Gaia Intelligence &amp; Infra Pulse</h2>
+<span class="px-2 py-0.5 rounded text-[11px] font-telemetry-micro bg-surface-container-high text-on-surface-variant">3 Insights Ativos</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="p-1 rounded bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-colors focus:outline-none">
+<span class="material-symbols-outlined text-base">chevron_left</span>
+</button>
+<button class="p-1 rounded bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-colors focus:outline-none">
+<span class="material-symbols-outlined text-base">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Insight Cards Horizontal Carousel Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+<!-- FinOps Card -->
+<div class="p-space-md rounded-xl bg-surface-container flex flex-col justify-between shadow-sm relative overflow-hidden group">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-secondary shadow-[0_0_8px_#ddb7ff]"></div>
+<div>
+<div class="flex items-center justify-between mb-space-xs">
+<span class="font-label-caps text-label-caps uppercase text-secondary font-semibold flex items-center gap-1">
+<span>💰 FinOps Warning</span>
+</span>
+<span class="font-telemetry-micro text-telemetry-micro text-on-surface-variant">Urgência Média</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface mt-1 leading-relaxed">
+              Instância <code class="px-1 py-0.5 rounded bg-surface-container-lowest text-secondary font-telemetry-code">ec2</code> ociosa há 45 min. Economia estimada: 
+              <strong class="text-secondary-fixed">$0.38/h (~$273/mês)</strong>.
+            </p>
+</div>
+<div class="mt-space-md pt-space-xs flex items-center justify-between">
+<button class="px-space-sm py-1 rounded bg-secondary-container text-on-secondary-container hover:bg-secondary hover:text-on-secondary font-telemetry-code text-telemetry-micro font-semibold transition-all cursor-pointer shadow-sm" onclick="toggleEC2Power()">
+              Desligar Agora
+            </button>
+<span class="font-telemetry-micro text-telemetry-micro text-outline">Agente: FinOps-Orb</span>
+</div>
+</div>
+<!-- Security Card -->
+<div class="p-space-md rounded-xl bg-surface-container flex flex-col justify-between shadow-sm relative overflow-hidden group">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary-container shadow-[0_0_8px_#00f2fe]"></div>
+<div>
+<div class="flex items-center justify-between mb-space-xs">
+<span class="font-label-caps text-label-caps uppercase text-primary-fixed-dim font-semibold flex items-center gap-1">
+<span>🛡️ Zero-Trust Security</span>
+</span>
+<span class="font-telemetry-micro text-telemetry-micro text-primary-container font-semibold">100% Blindado</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface mt-1 leading-relaxed">
+              Todos os 3 nós operando em túnel criptografado <strong>WireGuard</strong> sem portas públicas abertas para a Internet WAN.
+            </p>
+</div>
+<div class="mt-space-md pt-space-xs flex items-center justify-between">
+<span class="font-telemetry-micro text-telemetry-micro text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-primary-fixed-dim text-xs">verified</span>
+              Tailscale ACL Enforced
+            </span>
+<span class="font-telemetry-micro text-telemetry-micro text-outline">Firewall State: Strict</span>
+</div>
+</div>
+<!-- Latency Optimization Card -->
+<div class="p-space-md rounded-xl bg-surface-container flex flex-col justify-between shadow-sm relative overflow-hidden group">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-surface-tint shadow-[0_0_8px_#00dce6]"></div>
+<div>
+<div class="flex items-center justify-between mb-space-xs">
+<span class="font-label-caps text-label-caps uppercase text-surface-tint font-semibold flex items-center gap-1">
+<span>🚀 Route Optimization</span>
+</span>
+<span class="font-telemetry-micro text-telemetry-micro text-on-surface-variant">P2P Relay Direct</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface mt-1 leading-relaxed">
+              Latência de rede entre <strong class="text-on-surface">gateway</strong> e <strong class="text-on-surface">ec2</strong> otimizada com túnel direto via DERP-19 (Frankfurt).
+            </p>
+</div>
+<div class="mt-space-md pt-space-xs flex items-center justify-between">
+<div class="flex items-center gap-1 font-telemetry-micro text-telemetry-micro text-primary-fixed-dim">
+<span class="material-symbols-outlined text-xs">speed</span>
+<span>-34ms jitter reduction</span>
+</div>
+<span class="font-telemetry-micro text-telemetry-micro text-outline">Auto-Failover: On</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+  let isEC2Running = true;
+
+  function toggleEC2Power() {
+    isEC2Running = !isEC2Running;
+    
+    const toggleBtn = document.getElementById('ec2-toggle-btn');
+    const toggleThumb = document.getElementById('ec2-toggle-thumb');
+    const toggleIcon = document.getElementById('ec2-toggle-icon');
+    const statusBadge = document.getElementById('ec2-status-badge');
+    const statusDot = document.getElementById('ec2-status-dot');
+    const statusText = document.getElementById('ec2-status-text');
+    const stateDesc = document.getElementById('ec2-state-desc');
+
+    if (isEC2Running) {
+      // Turn ON State
+      toggleBtn.className = "relative w-14 h-7 rounded-full bg-primary-container flex items-center p-0.5 transition-all focus:outline-none shadow-[0_0_12px_rgba(0,242,254,0.4)] cursor-pointer";
+      toggleThumb.className = "w-6 h-6 rounded-full bg-surface-container-lowest transform translate-x-7 transition-transform flex items-center justify-center";
+      toggleIcon.className = "material-symbols-outlined text-[13px] text-primary-container font-bold";
+      toggleIcon.innerText = "bolt";
+
+      statusDot.className = "w-2 h-2 rounded-full bg-[#27C93F] shadow-[0_0_8px_#27C93F]";
+      statusText.innerText = "Online";
+      statusText.className = "font-telemetry-micro text-telemetry-micro uppercase text-on-surface font-semibold tracking-wider";
+      stateDesc.innerText = "Instância em Execução";
+    } else {
+      // Turn OFF / Stopped State
+      toggleBtn.className = "relative w-14 h-7 rounded-full bg-surface-container-highest flex items-center p-0.5 transition-all focus:outline-none cursor-pointer";
+      toggleThumb.className = "w-6 h-6 rounded-full bg-surface-container-low transform translate-x-0 transition-transform flex items-center justify-center";
+      toggleIcon.className = "material-symbols-outlined text-[13px] text-outline font-bold";
+      toggleIcon.innerText = "power_settings_new";
+
+      statusDot.className = "w-2 h-2 rounded-full bg-error shadow-[0_0_8px_#ffb4ab]";
+      statusText.innerText = "Stopped";
+      statusText.className = "font-telemetry-micro text-telemetry-micro uppercase text-error font-semibold tracking-wider";
+      stateDesc.innerText = "Instância Pausada (Hibernando)";
+    }
+  }
+</script></main></div><div class="fixed bottom-space-lg left-1/2 -translate-x-1/2 z-50 pointer-events-none"><div class="pointer-events-auto flex items-center gap-space-sm px-space-md py-space-sm rounded-full bg-surface-container-lowest/80 backdrop-blur-2xl shadow-[0_24px_48px_-12px_rgba(0,0,0,0.8)]"><a class="group relative flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-surface-container/60 hover:bg-surface-container-high hover:scale-125 transition-all duration-200 text-on-surface hover:text-primary" data-path="gemini-agent-chat" href="#" title="Gemini Agent Chat"><span class="material-symbols-outlined text-2xl">neurology</span><span class="absolute -bottom-1 w-1 h-1 rounded-full bg-primary-container shadow-[0_0_8px_#00f2fe]"></span></a><a class="group relative flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-surface-container/60 hover:bg-surface-container-high hover:scale-125 transition-all duration-200 text-on-surface hover:text-primary" data-path="mesh-nodes" href="#" title="Tailscale Mesh Nodes"><span class="material-symbols-outlined text-2xl">lan</span></a><a class="group relative flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-surface-container/60 hover:bg-surface-container-high hover:scale-125 transition-all duration-200 text-on-surface hover:text-primary" data-path="pty-terminal" href="#" title="Mark v3 PTY Terminal"><span class="material-symbols-outlined text-2xl">terminal</span></a><a class="group relative flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-surface-container/60 hover:bg-surface-container-high hover:scale-125 transition-all duration-200 text-on-surface hover:text-primary" data-path="finops-ai-insights" href="#" title="FinOps &amp; AI Insights"><span class="material-symbols-outlined text-2xl">monitoring</span></a><a class="group relative flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-surface-container/60 hover:bg-surface-container-high hover:scale-125 transition-all duration-200 text-on-surface hover:text-primary" data-path="projects-catalog" href="#" title="Projects Catalog"><span class="material-symbols-outlined text-2xl">folder</span></a><div class="w-px h-6 bg-surface-container-highest my-auto mx-space-xs"></div><a class="group relative flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-surface-container/60 hover:bg-surface-container-high hover:scale-125 transition-all duration-200 text-on-surface hover:text-primary" data-path="system-settings" href="#" title="Settings"><span class="material-symbols-outlined text-2xl">tune</span></a></div></div></body></html>
