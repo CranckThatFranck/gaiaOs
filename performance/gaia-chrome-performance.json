@@ -1,5 +1,6 @@
 {
   "HighEfficiencyModeEnabled": true,
+  "MemorySaverModeSavings": 2,
   "BackgroundModeEnabled": false,
   "MediaRecommendationsEnabled": false,
   "MetricsReportingEnabled": false,
