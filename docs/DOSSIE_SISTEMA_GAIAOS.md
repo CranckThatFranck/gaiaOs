@@ -168,6 +168,31 @@ Com a migração do legado `gemini-cli` para o **Antigravity CLI (`agy`)**, o us
 
 ---
 
+### Módulo 6: Integração Muse Wonder 1.0 (Meta Frontier Agent & Vertex AI Serverless)
+
+Ativação e integração do modelo de engenharia de software **Meta Muse Wonder 1.0**, provisionado em modo Serverless no **Google Cloud Vertex AI** (projeto `negocio-de-bolso-492422`), tanto no terminal via CLI oficial **Muse Code (`muse`)** quanto no editor **VS Code**.
+
+* **Desafio e Arquitetura da Solução:**
+  * O Vertex AI expõe o modelo via Responses API global (`/publishers/meta/v1/responses`) autenticada com Bearer Tokens de curta duração do Google Cloud.
+  * A CLI oficial `muse` (v1.4.15) espera o catálogo em `/muse-code/models` e autenticação com API Key estática.
+  * Solução: Implementação do daemon local **`gaia-muse-vertex-bridge`** em Python padrão (porta `127.0.0.1:18787`).
+* **Recursos do Bridge Local:**
+  * **Cache e Renovação de Token:** Executa `gcloud auth print-access-token` para o usuário `francisco` e armazena em cache por 40 minutos com renovação automática em caso de expiração (401).
+  * **Catálogo de Modelos:** Responde a requisições de descoberta (`/muse-code/models`, `/v1/models`) informando a disponibilidade de `muse-wonder-1.0`.
+  * **Streaming SSE Transparente:** Repassa `POST /v1/responses` em tempo real para a nuvem sem buffer intermediário.
+  * **Adaptador OpenAI Chat Completions:** Converte requisições padrão `/v1/chat/completions` (OpenAI format) em requisições Vertex AI Responses API e retroconverte os deltas em chunks SSE, permitindo que qualquer ferramenta ou extensão consuma o Muse Wonder 1.0.
+  * **Pegada de Memória:** ~10.8 MB de RAM (limite forçado via cgroup systemd de 30 MB).
+* **CLI Terminal (`muse` e `muse-wonder`):**
+  * Binário oficial isolado em `/opt/muse/bin/` (eliminando alertas de bubblewrap sandbox em diretório home).
+  * Wrapper universal `/usr/local/bin/muse` injeta `META_API_KEY="gcp-vertex-proxy"` e garante que o bridge está ativo.
+  * Lançador dedicado `/usr/local/bin/muse-wonder` inicia sessões TUI interativas ou executa comandos com reasoning profundo (`high`) e flags de economia de taxa.
+* **Ambiente VS Code:**
+  * Extensão **Continue** (`continue.continue`) instalada e configurada com o provedor OpenAI apontando para `http://127.0.0.1:18787/v1` com janela de contexto de 1 milhão de tokens.
+  * Perfil de terminal integrado `"Muse Wonder 1.0"` adicionado a `settings.json`.
+  * Atalhos no VS Code: `Ctrl+L` para chat interativo com o modelo e `Ctrl+I` para edição/geração inline de código.
+
+---
+
 ## 4. Guia Rápido de Comandos do Gaia OS
 
 | Comando | Descrição |
@@ -175,6 +200,8 @@ Com a migração do legado `gemini-cli` para o **Antigravity CLI (`agy`)**, o us
 | `gaia-sec-verify` | Executa a suíte de testes de integridade do Gaia OS (21 testes de segurança, performance e rede). |
 | `gaia-guardian-ui` | Abre a interface gráfica de telemetria, saúde do sistema e conselhos da IA. |
 | `gaia-gemini-advisor` | Executa uma consulta imediata ao Gemini 3.8 Flash via terminal. |
+| `muse` | Inicia o Meta Muse Code CLI oficial conectado ao Muse Wonder 1.0. |
+| `muse-wonder "prompt"` | Executa uma tarefa direta com Muse Wonder 1.0 em modo de reasoning alto. |
 | `gaia-snapshot list` | Lista todos os pontos de restauração e snapshots salvos. |
 | `gaia-snapshot create "motivo"` | Cria um snapshot instantâneo do estado do sistema. |
 | `gaia-pkg build <diretorio>` | Constrói um pacote `.deb` e o indexa no repositório APT local. |
@@ -185,6 +212,12 @@ Com a migração do legado `gemini-cli` para o **Antigravity CLI (`agy`)**, o us
 ## 5. Rastreabilidade de Arquivos do Sistema
 
 * **Repositório Git do Projeto:** [`/home/francisco/Documentos/Projetos/GaiaOS`](file:///home/francisco/Documentos/Projetos/GaiaOS)
+* **Daemon Ponte Muse Wonder 1.0:** [`/usr/local/bin/gaia-muse-vertex-bridge.py`](file:///usr/local/bin/gaia-muse-vertex-bridge.py)
+* **Serviço Systemd do Bridge:** [`/etc/systemd/system/gaia-muse-bridge.service`](file:///etc/systemd/system/gaia-muse-bridge.service)
+* **Lançador Muse Wonder:** [`/usr/local/bin/muse-wonder`](file:///usr/local/bin/muse-wonder)
+* **Wrapper Muse CLI:** [`/usr/local/bin/muse`](file:///usr/local/bin/muse)
+* **Configuração Continue (VS Code):** [`/home/francisco/.continue/config.json`](file:///home/francisco/.continue/config.json)
+* **Configuração do VS Code:** [`/home/francisco/.config/Code/User/settings.json`](file:///home/francisco/.config/Code/User/settings.json)
 * **Regras Netfilter Raw:** [`/etc/gaiaos/security/gaia-cve-2026-98432-shield.nft`](file:///etc/gaiaos/security/gaia-cve-2026-98432-shield.nft)
 * **Configuração Sysctl de Segurança:** [`/etc/sysctl.d/98-gaia-security-cve-2026-98432.conf`](file:///etc/sysctl.d/98-gaia-security-cve-2026-98432.conf)
 * **Ativação Persistente MGLRU:** [`/etc/tmpfiles.d/gaia-mglru.conf`](file:///etc/tmpfiles.d/gaia-mglru.conf)

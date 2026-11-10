@@ -1,0 +1,23 @@
+[Unit]
+Description=Gaia OS - Muse Wonder 1.0 Vertex AI Bridge Daemon
+After=network.target
+
+[Service]
+Type=simple
+User=francisco
+Group=francisco
+WorkingDirectory=/home/francisco
+Environment="HOME=/home/francisco"
+Environment="PATH=/usr/local/bin:/usr/bin:/bin"
+ExecStart=/usr/bin/python3 -u /usr/local/bin/gaia-muse-vertex-bridge.py
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+# Memory constraint - max 30M
+MemoryMax=30M
+TasksMax=16
+
+[Install]
+WantedBy=multi-user.target

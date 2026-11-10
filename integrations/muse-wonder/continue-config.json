@@ -1,0 +1,45 @@
+{
+  "models": [
+    {
+      "title": "Muse Wonder 1.0 (Meta / Vertex AI)",
+      "provider": "openai",
+      "model": "muse-wonder-1.0",
+      "apiKey": "gcp-vertex-proxy",
+      "apiBase": "http://127.0.0.1:18787/v1",
+      "roles": ["chat", "edit"],
+      "contextLength": 1048576,
+      "completionOptions": {
+        "temperature": 1.0,
+        "topP": 1.0
+      }
+    }
+  ],
+  "customCommands": [
+    {
+      "name": "muse-explain",
+      "prompt": "Explique detalhadamente a lógica, arquitetura e fluxo deste código no Gaia OS:",
+      "description": "Explicar código com Muse Wonder 1.0"
+    },
+    {
+      "name": "muse-optimize",
+      "prompt": "Otimize este código para desempenho e baixo consumo de memória RAM (< 15 MB) mantendo legibilidade:",
+      "description": "Otimizar código com Muse Wonder 1.0"
+    },
+    {
+      "name": "muse-test",
+      "prompt": "Gere testes unitários e de integração abrangentes para o código selecionado:",
+      "description": "Gerar testes com Muse Wonder 1.0"
+    }
+  ],
+  "contextProviders": [
+    { "name": "file" },
+    { "name": "code" },
+    { "name": "docs" },
+    { "name": "diff" },
+    { "name": "terminal" },
+    { "name": "problems" },
+    { "name": "folder" },
+    { "name": "codebase" }
+  ],
+  "allowAnonymousTelemetry": false
+}
