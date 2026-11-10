@@ -1,0 +1,7 @@
+{
+  "HighEfficiencyModeEnabled": true,
+  "BackgroundModeEnabled": false,
+  "MediaRecommendationsEnabled": false,
+  "MetricsReportingEnabled": false,
+  "PromotionalTabsEnabled": false
+}

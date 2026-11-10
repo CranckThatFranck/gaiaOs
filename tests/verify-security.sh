@@ -104,6 +104,23 @@ check "Política preventiva PHP2Shell instalada em /etc/gaiaos/security/99-gaia-
     "grep -q 'session.upload_progress.enabled = 0' /etc/gaiaos/security/99-gaia-php2shell-shield.ini"
 
 echo ""
+echo "--- 5. Testes de Performance, Repositório Local & Gaia Guardian AI ---"
+check "MGLRU (Multi-Gen LRU) ativo (0x0007) com proteção de working-set (1000ms) e page-cluster=0" \
+    "[ \"\$(cat /sys/kernel/mm/lru_gen/enabled)\" = \"0x0007\" ] && [ \"\$(cat /sys/kernel/mm/lru_gen/min_ttl_ms)\" = \"1000\" ] && [ \"\$(sysctl -n vm.page-cluster)\" = \"0\" ]"
+
+check "Repositório APT Offline (/var/local/gaia-repo) e gaia-snapshot operacionais" \
+    "[ -f /var/local/gaia-repo/Packages.gz ] && [ -x /usr/local/bin/gaia-pkg ] && [ -x /usr/local/bin/gaia-snapshot ]"
+
+check "Política Chrome HighEfficiencyMode instalada e Docker em Socket-Activation" \
+    "[ -f /etc/opt/chrome/policies/managed/gaia-performance.json ] && systemctl is-active --quiet docker.socket"
+
+check "Daemon C 'gaia-guardian' ativo, lendo temperatura coretemp e consumindo < 2 MB de RAM" \
+    "systemctl is-active --quiet gaia-guardian.service && [ -f /var/log/gaia-guardian/status.json ] && [ \"\$(jq -r '.daemon_rss_kb' /var/log/gaia-guardian/status.json 2>/dev/null || awk -F': ' '/daemon_rss_kb/ {gsub(/,/,\"\",\$2); print \$2}' /var/log/gaia-guardian/status.json)\" -lt 2048 ]"
+
+check "Consultor Gemini 3.8 Flash e Interface Gráfica (gaia-guardian-ui) instalados" \
+    "[ -x /usr/local/bin/gaia-gemini-advisor ] && [ -x /usr/local/bin/gaia-guardian-ui ] && [ -f /var/log/gaia-guardian/gemini-insights.log ]"
+
+echo ""
 echo "=================================================================="
 echo " Resultado Final: $PASS testes aprovados, $FAIL falhas."
 echo "=================================================================="

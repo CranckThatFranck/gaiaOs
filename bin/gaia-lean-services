@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# Gaia OS 1.0 - Otimização de Serviços em Background & Chrome Memory Saver (Etapa 3)
+# ==============================================================================
+set -euo pipefail
+
+GAIA_ROOT="/home/francisco/Documentos/Projetos/GaiaOS"
+
+echo "[gaia-lean-services] 1. Instalando política de Economia de Memória (HighEfficiencyMode) no Google Chrome..."
+sudo mkdir -p /etc/opt/chrome/policies/managed
+sudo cp "$GAIA_ROOT/performance/gaia-chrome-performance.json" /etc/opt/chrome/policies/managed/gaia-performance.json
+sudo chmod 644 /etc/opt/chrome/policies/managed/gaia-performance.json
+
+echo "[gaia-lean-services] 2. Convertendo Docker para ativação sob demanda (docker.socket)..."
+sudo systemctl disable --now docker.service 2>/dev/null || true
+sudo systemctl stop containerd.service 2>/dev/null || true
+sudo systemctl enable --now docker.socket 2>/dev/null || true
+
+echo "[gaia-lean-services] 3. Desativando daemons ociosos desnecessários no Gateway NV55C (ModemManager, fwupd)..."
+sudo systemctl disable --now ModemManager.service 2>/dev/null || true
+sudo systemctl stop fwupd.service 2>/dev/null || true
+sudo systemctl mask fwupd-refresh.timer 2>/dev/null || true
+
+echo "[gaia-lean-services] Otimização de serviços e políticas do navegador concluída!"

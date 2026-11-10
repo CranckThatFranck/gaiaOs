@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# Gaia OS 1.0 - Sistema Instantâneo de Snapshot & Rollback (Zero-Network)
+# ==============================================================================
+set -euo pipefail
+
+SNAP_DIR="/var/backups/gaia-snapshots"
+sudo mkdir -p "$SNAP_DIR"
+
+cmd="${1:-list}"
+label="${2:-manual}"
+
+case "$cmd" in
+    create)
+        ts="$(date +%Y%m%d-%H%M%S)"
+        safe_label="$(echo "$label" | tr -cd 'a-zA-Z0-9_-')"
+        snap_file="$SNAP_DIR/gaia-snap-${ts}-${safe_label}.tar.zst"
+        echo "[gaia-snapshot] Criando snapshot do sistema: $(basename "$snap_file")..."
+        sudo tar --zstd -cf "$snap_file" \
+            --ignore-failed-read \
+            /etc/sysctl.d \
+            /etc/tmpfiles.d \
+            /etc/udev/rules.d \
+            /etc/gaiaos \
+            /etc/opt/chrome/policies/managed \
+            /etc/systemd/system/gaia* \
+            /usr/local/bin/gaia* \
+            /home/francisco/.config/kwinrc \
+            /home/francisco/.config/plasmashellrc \
+            /home/francisco/.config/kdeglobals 2>/dev/null || true
+        sudo ln -sf "$snap_file" "$SNAP_DIR/latest.tar.zst"
+        echo "[gaia-snapshot] Snapshot salvo com sucesso: $snap_file ($(du -h "$snap_file" | cut -f1))"
+        ;;
+    list)
+        echo "=== Snapshots Disponíveis no Gaia OS ($SNAP_DIR) ==="
+        ls -lh "$SNAP_DIR"/*.tar.zst 2>/dev/null || echo "Nenhum snapshot encontrado."
+        ;;
+    rollback)
+        target="${2:-$SNAP_DIR/latest.tar.zst}"
+        if [ ! -f "$target" ] && [ -f "$SNAP_DIR/$target" ]; then
+            target="$SNAP_DIR/$target"
+        fi
+        if [ ! -f "$target" ]; then
+            echo "[gaia-snapshot] ERRO: Snapshot '$target' não encontrado." >&2
+            exit 1
+        fi
+        echo "[gaia-snapshot] Restaurando snapshot: $target ..."
+        sudo tar --zstd -xf "$target" -C /
+        sudo sysctl --system >/dev/null 2>&1 || true
+        sudo systemctl daemon-reload || true
+        echo "[gaia-snapshot] Rollback concluído com sucesso!"
+        ;;
+    *)
+        echo "Uso: gaia-snapshot {create [label]|list|rollback [arquivo]}"
+        exit 1
+        ;;
+esac

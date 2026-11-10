@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# Gaia OS 1.0 - Construtor Agêntico de Pacotes .deb & Repositório APT Local
+# Permite evoluir o Gaia OS compilando e instalando pacotes sem internet/pendrive
+# ==============================================================================
+set -euo pipefail
+
+REPO_DIR="/var/local/gaia-repo"
+POOL_DIR="$REPO_DIR/pool"
+APT_LIST="/etc/apt/sources.list.d/gaia-local.list"
+
+update_index() {
+    sudo mkdir -p "$POOL_DIR"
+    (
+        cd "$REPO_DIR"
+        dpkg-scanpackages --multiversion pool /dev/null 2>/dev/null | sudo tee "$REPO_DIR/Packages" >/dev/null
+        gzip -9c "$REPO_DIR/Packages" | sudo tee "$REPO_DIR/Packages.gz" >/dev/null
+        cat <<EOF | sudo tee "$REPO_DIR/Release" >/dev/null
+Origin: Gaia OS Local Agentic Repository
+Label: GaiaOS-Local
+Suite: stable
+Codename: westmere
+Architectures: amd64 all
+Components: main
+Description: Repositorio Local Autonomo do Gaia OS 1.0 (Zero-Network)
+Date: $(date -Ru)
+EOF
+    )
+    if [ ! -f "$APT_LIST" ]; then
+        echo "deb [trusted=yes] file:$REPO_DIR ./" | sudo tee "$APT_LIST" >/dev/null
+    fi
+}
+
+cmd="${1:-list}"
+
+case "$cmd" in
+    init-repo)
+        echo "[gaia-pkg] Inicializando repositório APT offline local em $REPO_DIR..."
+        update_index
+        echo "[gaia-pkg] Repositório local pronto e registrado em $APT_LIST"
+        ;;
+    build)
+        pkg_src="${2:?Informe o diretório de origem do pacote Debian}"
+        if [ ! -d "$pkg_src/DEBIAN" ]; then
+            echo "[gaia-pkg] ERRO: Diretório '$pkg_src/DEBIAN' não encontrado." >&2
+            exit 1
+        fi
+        pkg_name="$(awk -F': ' '/^Package:/ {print $2}' "$pkg_src/DEBIAN/control" | tr -d ' \r')"
+        pkg_ver="$(awk -F': ' '/^Version:/ {print $2}' "$pkg_src/DEBIAN/control" | tr -d ' \r')"
+        pkg_arch="$(awk -F': ' '/^Architecture:/ {print $2}' "$pkg_src/DEBIAN/control" | tr -d ' \r')"
+        out_deb="$POOL_DIR/${pkg_name}_${pkg_ver}_${pkg_arch}.deb"
+        sudo mkdir -p "$POOL_DIR"
+        chmod 755 "$pkg_src/DEBIAN"
+        chmod 755 "$pkg_src/DEBIAN"/post* "$pkg_src/DEBIAN"/pre* 2>/dev/null || true
+        echo "[gaia-pkg] Construindo pacote nativo: $(basename "$out_deb")..."
+        sudo dpkg-deb --root-owner-group --build "$pkg_src" "$out_deb" >/dev/null
+        update_index
+        echo "[gaia-pkg] Pacote publicado no repositório offline: $out_deb"
+        ;;
+    install)
+        target="${2:?Informe o nome do pacote ou caminho .deb}"
+        if [ -f "$target" ]; then
+            deb_file="$target"
+        else
+            deb_file="$(ls -t "$POOL_DIR/${target}_"*.deb 2>/dev/null | head -n 1 || true)"
+        fi
+        if [ -z "${deb_file:-}" ] || [ ! -f "$deb_file" ]; then
+            echo "[gaia-pkg] ERRO: Pacote '$target' não encontrado em $POOL_DIR" >&2
+            exit 1
+        fi
+        if command -v gaia-snapshot >/dev/null 2>&1; then
+            gaia-snapshot create "pre-install-$(basename "$deb_file" .deb)" >/dev/null
+        fi
+        echo "[gaia-pkg] Instalando pacote local: $(basename "$deb_file")..."
+        sudo dpkg -i "$deb_file"
+        echo "[gaia-pkg] Instalação concluída com sucesso!"
+        ;;
+    list)
+        echo "=== Pacotes no Repositório Agêntico Local ($REPO_DIR) ==="
+        ls -lh "$POOL_DIR"/*.deb 2>/dev/null || echo "Nenhum pacote construído ainda."
+        ;;
+    *)
+        echo "Uso: gaia-pkg {init-repo|build <dir>|install <nome-ou-deb>|list}"
+        exit 1
+        ;;
+esac
