@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
-Gaia OS - Vertex AI Muse Wonder 1.0 Bridge
+Gaia OS - Vertex AI Muse Wonder 1.0 Bridge (v2 - Resilient & Throttled)
 Translates Meta Muse Code CLI and OpenAI-compatible requests
 to Google Cloud Vertex AI Responses API for project negocio-de-bolso-492422.
+Includes request serialization, rate-limit backoff (429), and auto-refresh on 401.
 Ultra-lightweight (< 12 MB RSS), zero external dependencies.
 """
 
@@ -62,13 +63,62 @@ class TokenManager:
 
 
 token_manager = TokenManager()
+vertex_lock = threading.Lock()
+last_request_time = 0.0
+
+
+def call_vertex_api(req_bytes, headers_dict, max_retries=4):
+    """
+    Executes request to Vertex AI with global serialization,
+    minimum interval spacing, automatic token refresh on 401,
+    and automatic exponential backoff on 429.
+    """
+    global last_request_time
+
+    for attempt in range(max_retries):
+        with vertex_lock:
+            now = time.time()
+            elapsed = now - last_request_time
+            if elapsed < 0.8:
+                time.sleep(0.8 - elapsed)
+
+            token = token_manager.get_token()
+            headers = dict(headers_dict)
+            headers["Authorization"] = f"Bearer {token}"
+            headers["Content-Type"] = "application/json"
+
+            req = urllib.request.Request(
+                VERTEX_ENDPOINT,
+                data=req_bytes,
+                headers=headers,
+                method="POST"
+            )
+
+            try:
+                resp = urllib.request.urlopen(req, timeout=120)
+                last_request_time = time.time()
+                return resp
+            except urllib.error.HTTPError as e:
+                last_request_time = time.time()
+                if e.code == 401 and attempt < max_retries - 1:
+                    sys.stdout.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Vertex AI 401: Refreshing token and retrying...\n")
+                    sys.stdout.flush()
+                    token_manager.invalidate()
+                    continue
+                elif e.code == 429 and attempt < max_retries - 1:
+                    wait_sec = 2.0 * (attempt + 1)
+                    sys.stdout.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Vertex AI 429 rate limit: backoff {wait_sec:.1f}s (retry {attempt + 1}/{max_retries})...\n")
+                    sys.stdout.flush()
+                    time.sleep(wait_sec)
+                    continue
+                else:
+                    raise
 
 
 class BridgeRequestHandler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
 
     def log_message(self, format, *args):
-        # Concise logging
         sys.stdout.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {self.address_string()} - {format % args}\n")
         sys.stdout.flush()
 
@@ -84,6 +134,8 @@ class BridgeRequestHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         path = self.path.split("?")[0]
+
+        # Health
         if path in ("/health", "/", ""):
             data = {
                 "status": "healthy",
@@ -101,6 +153,23 @@ class BridgeRequestHandler(BaseHTTPRequestHandler):
             self.wfile.write(body)
             return
 
+        # Muse Code config endpoint
+        if path in ("/v1/muse-code/config", "/muse-code/config"):
+            config_resp = {
+                "schema_version": 1,
+                "settings": {},
+                "warnings": []
+            }
+            body = json.dumps(config_resp).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.send_cors_headers()
+            self.end_headers()
+            self.wfile.write(body)
+            return
+
+        # Model catalog
         if path in ("/v1/muse-code/models", "/muse-code/models", "/v1/models", "/models"):
             catalog = {
                 "object": "list",
@@ -154,14 +223,11 @@ class BridgeRequestHandler(BaseHTTPRequestHandler):
         self.send_error(404, f"POST path not found: {path}")
 
     def handle_responses_api(self, req_body):
-        token = token_manager.get_token()
         headers = {
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json",
             "Accept": self.headers.get("Accept", "application/json")
         }
 
-        # Normalize model in payload if needed
+        # Normalize model in payload
         try:
             payload = json.loads(req_body.decode("utf-8"))
             if payload.get("model") in (MODEL_ID, f"meta/{MODEL_ID}"):
@@ -170,52 +236,53 @@ class BridgeRequestHandler(BaseHTTPRequestHandler):
         except Exception:
             forward_data = req_body
 
-        req = urllib.request.Request(VERTEX_ENDPOINT, data=forward_data, headers=headers, method="POST")
-
         try:
-            with urllib.request.urlopen(req, timeout=120) as resp:
-                status = resp.status
-                content_type = resp.headers.get("Content-Type", "application/json")
-                is_sse = "text/event-stream" in content_type
+            resp = call_vertex_api(forward_data, headers)
+            status = resp.status
+            content_type = resp.headers.get("Content-Type", "application/json")
+            is_sse = "text/event-stream" in content_type
 
-                self.send_response(status)
-                self.send_header("Content-Type", content_type)
-                self.send_cors_headers()
+            self.send_response(status)
+            self.send_header("Content-Type", content_type)
+            self.send_cors_headers()
 
-                if is_sse:
-                    self.send_header("Cache-Control", "no-cache")
-                    self.send_header("Connection", "keep-alive")
-                    self.send_header("Transfer-Encoding", "chunked")
-                    self.end_headers()
+            if is_sse:
+                self.send_header("Cache-Control", "no-cache")
+                self.send_header("Connection", "keep-alive")
+                self.send_header("Transfer-Encoding", "chunked")
+                self.end_headers()
 
-                    # Stream SSE in chunks
+                # Stream SSE chunks safely
+                try:
                     while True:
                         chunk = resp.read(1024)
                         if not chunk:
                             break
-                        # HTTP/1.1 chunked encoding: length in hex + \r\n + chunk + \r\n
                         chunk_header = f"{len(chunk):X}\r\n".encode("utf-8")
                         self.wfile.write(chunk_header + chunk + b"\r\n")
                         self.wfile.flush()
-                    # Terminating chunk
                     self.wfile.write(b"0\r\n\r\n")
                     self.wfile.flush()
-                else:
-                    body = resp.read()
-                    self.send_header("Content-Length", str(len(body)))
-                    self.end_headers()
-                    self.wfile.write(body)
+                except (BrokenPipeError, ConnectionResetError):
+                    # Client closed connection prematurely
+                    pass
+            else:
+                body = resp.read()
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
 
         except urllib.error.HTTPError as e:
-            if e.code == 401:
-                token_manager.invalidate()
             err_body = e.read()
             self.send_response(e.code)
             self.send_header("Content-Type", e.headers.get("Content-Type", "application/json"))
             self.send_header("Content-Length", str(len(err_body)))
             self.send_cors_headers()
             self.end_headers()
-            self.wfile.write(err_body)
+            try:
+                self.wfile.write(err_body)
+            except (BrokenPipeError, ConnectionResetError):
+                pass
         except Exception as e:
             err_msg = json.dumps({"error": {"message": str(e), "type": "bridge_error"}}).encode("utf-8")
             self.send_response(500)
@@ -223,7 +290,10 @@ class BridgeRequestHandler(BaseHTTPRequestHandler):
             self.send_header("Content-Length", str(len(err_msg)))
             self.send_cors_headers()
             self.end_headers()
-            self.wfile.write(err_msg)
+            try:
+                self.wfile.write(err_msg)
+            except (BrokenPipeError, ConnectionResetError):
+                pass
 
     def handle_chat_completions(self, req_body):
         """Translates OpenAI /v1/chat/completions into Vertex AI Responses API and maps output back."""
@@ -243,7 +313,6 @@ class BridgeRequestHandler(BaseHTTPRequestHandler):
             role = msg.get("role", "user")
             content = msg.get("content", "")
             if isinstance(content, list):
-                # Handle multimodal / parts if any
                 text_parts = [p.get("text", "") for p in content if isinstance(p, dict) and p.get("type") == "text"]
                 content = " ".join(text_parts)
             if role == "system":
@@ -253,7 +322,6 @@ class BridgeRequestHandler(BaseHTTPRequestHandler):
             elif role == "assistant":
                 conversation_parts.append(f"Assistant: {content}")
 
-        # If only one user message, pass it cleanly without "User: " prefix
         if len(conversation_parts) == 1 and conversation_parts[0].startswith("User: "):
             prompt_input = conversation_parts[0][6:]
         else:
@@ -267,35 +335,26 @@ class BridgeRequestHandler(BaseHTTPRequestHandler):
         if system_instructions:
             vertex_payload["instructions"] = "\n".join(system_instructions)
 
-        token = token_manager.get_token()
+        forward_bytes = json.dumps(vertex_payload).encode("utf-8")
         headers = {
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json"
+            "Accept": "text/event-stream" if stream else "application/json"
         }
-
-        req = urllib.request.Request(
-            VERTEX_ENDPOINT,
-            data=json.dumps(vertex_payload).encode("utf-8"),
-            headers=headers,
-            method="POST"
-        )
 
         created_ts = int(time.time())
         chat_id = f"chatcmpl-muse-{created_ts}"
 
         try:
-            with urllib.request.urlopen(req, timeout=120) as resp:
-                if stream:
-                    self.send_response(200)
-                    self.send_header("Content-Type", "text/event-stream")
-                    self.send_header("Cache-Control", "no-cache")
-                    self.send_header("Connection", "keep-alive")
-                    self.send_cors_headers()
-                    self.end_headers()
+            resp = call_vertex_api(forward_bytes, headers)
+            if stream:
+                self.send_response(200)
+                self.send_header("Content-Type", "text/event-stream")
+                self.send_header("Cache-Control", "no-cache")
+                self.send_header("Connection", "keep-alive")
+                self.send_cors_headers()
+                self.end_headers()
 
-                    # Stream line by line and parse SSE
-                    buffer = ""
-                    current_event = ""
+                current_event = ""
+                try:
                     for raw_line in resp:
                         line = raw_line.decode("utf-8", errors="replace")
                         if line.startswith("event: "):
@@ -343,51 +402,54 @@ class BridgeRequestHandler(BaseHTTPRequestHandler):
                                 self.wfile.flush()
                         elif line == "\n" or line == "\r\n":
                             current_event = ""
-                else:
-                    body_bytes = resp.read()
-                    vertex_resp = json.loads(body_bytes.decode("utf-8"))
-                    extracted_text = ""
-                    for item in vertex_resp.get("output", []):
-                        if item.get("type") == "message":
-                            for part in item.get("content", []):
-                                if part.get("type") == "output_text":
-                                    extracted_text += part.get("text", "")
+                except (BrokenPipeError, ConnectionResetError):
+                    pass
+            else:
+                body_bytes = resp.read()
+                vertex_resp = json.loads(body_bytes.decode("utf-8"))
+                extracted_text = ""
+                for item in vertex_resp.get("output", []):
+                    if item.get("type") == "message":
+                        for part in item.get("content", []):
+                            if part.get("type") == "output_text":
+                                extracted_text += part.get("text", "")
 
-                    chat_resp = {
-                        "id": chat_id,
-                        "object": "chat.completion",
-                        "created": created_ts,
-                        "model": MODEL_ID,
-                        "choices": [
-                            {
-                                "index": 0,
-                                "message": {
-                                    "role": "assistant",
-                                    "content": extracted_text
-                                },
-                                "finish_reason": "stop"
-                            }
-                        ],
-                        "usage": vertex_resp.get("usage", {})
-                    }
-                    resp_bytes = json.dumps(chat_resp).encode("utf-8")
-                    self.send_response(200)
-                    self.send_header("Content-Type", "application/json")
-                    self.send_header("Content-Length", str(len(resp_bytes)))
-                    self.send_cors_headers()
-                    self.end_headers()
-                    self.wfile.write(resp_bytes)
+                chat_resp = {
+                    "id": chat_id,
+                    "object": "chat.completion",
+                    "created": created_ts,
+                    "model": MODEL_ID,
+                    "choices": [
+                        {
+                            "index": 0,
+                            "message": {
+                                "role": "assistant",
+                                "content": extracted_text
+                            },
+                            "finish_reason": "stop"
+                        }
+                    ],
+                    "usage": vertex_resp.get("usage", {})
+                }
+                resp_bytes = json.dumps(chat_resp).encode("utf-8")
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(resp_bytes)))
+                self.send_cors_headers()
+                self.end_headers()
+                self.wfile.write(resp_bytes)
 
         except urllib.error.HTTPError as e:
-            if e.code == 401:
-                token_manager.invalidate()
             err_body = e.read()
             self.send_response(e.code)
-            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Type", e.headers.get("Content-Type", "application/json"))
             self.send_header("Content-Length", str(len(err_body)))
             self.send_cors_headers()
             self.end_headers()
-            self.wfile.write(err_body)
+            try:
+                self.wfile.write(err_body)
+            except (BrokenPipeError, ConnectionResetError):
+                pass
         except Exception as e:
             err_msg = json.dumps({"error": {"message": str(e), "type": "bridge_error"}}).encode("utf-8")
             self.send_response(500)
@@ -395,12 +457,15 @@ class BridgeRequestHandler(BaseHTTPRequestHandler):
             self.send_header("Content-Length", str(len(err_msg)))
             self.send_cors_headers()
             self.end_headers()
-            self.wfile.write(err_msg)
+            try:
+                self.wfile.write(err_msg)
+            except (BrokenPipeError, ConnectionResetError):
+                pass
 
 
 def main():
     server = ThreadingHTTPServer((HOST, PORT), BridgeRequestHandler)
-    sys.stdout.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Gaia Muse Vertex Bridge listening on http://{HOST}:{PORT}\n")
+    sys.stdout.write(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Gaia Muse Vertex Bridge (v2) listening on http://{HOST}:{PORT}\n")
     sys.stdout.write(f"Target: {VERTEX_ENDPOINT}\n")
     sys.stdout.flush()
     try:
