@@ -91,8 +91,8 @@ check "Runtime Shield (gaia-node-shield.cjs) bloqueia CVE-2026-105482 (DNS NUL b
 
 echo ""
 echo "--- 4. Testes de Privacidade, Ativos Locais e Funcionamento de Serviços ---"
-check "PostgreSQL local (127.0.0.1:5432) permanece acessível localmente mas isolado da LAN" \
-    "nc -z -w 2 127.0.0.1 5432 || bash -c '</dev/tcp/127.0.0.1/5432'"
+check "Nenhum container Docker desnecessário ou porta 0.0.0.0:5432 exposta" \
+    "[ -z \"\$(sudo docker ps -q 2>/dev/null)\" ] && ! ss -tuln | grep -q ':5432 '"
 
 check "Diretórios de credenciais (.ssh, chaves_e_pem, .aws, .config/gcloud) blindados (permissão 700)" \
     "[ \"\$(stat -c %a /home/francisco/.ssh)\" = \"700\" ] && [ \"\$(stat -c %a /home/francisco/chaves_e_pem)\" = \"700\" ] && [ \"\$(stat -c %a /home/francisco/.aws)\" = \"700\" ] && [ \"\$(stat -c %a /home/francisco/.config/gcloud)\" = \"700\" ]"
