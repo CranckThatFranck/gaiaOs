@@ -1,0 +1,16 @@
+[Unit]
+Description=Gaia OS Security Shield (CVE-2026-98432 Netfilter Raw & Kernel Hardening)
+DefaultDependencies=no
+Before=network-pre.target
+Wants=network-pre.target
+After=systemd-sysctl.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/sbin/nft -f /etc/gaiaos/security/gaia-cve-2026-98432-shield.nft
+ExecReload=/usr/sbin/nft -f /etc/gaiaos/security/gaia-cve-2026-98432-shield.nft
+ExecStop=/usr/sbin/nft delete table inet gaia_cve_2026_98432_shield
+
+[Install]
+WantedBy=multi-user.target
