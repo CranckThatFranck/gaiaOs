@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><title>Gaia WebOS</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "secondary-fixed-dim": "#ddb7ff", "on-primary-fixed-variant": "#004f53", "on-secondary-fixed-variant": "#6900b3", "secondary-fixed": "#f0dbff", "surface": "#111319", "on-primary-fixed": "#002022", "secondary": "#ddb7ff", "on-secondary-container": "#d6a9ff", "on-tertiary-fixed": "#3e0022", "surface-container-highest": "#33353b", "surface-container-low": "#191c21", "primary-fixed-dim": "#00dce6", "on-error": "#690005", "inverse-on-surface": "#2e3036", "inverse-surface": "#e2e2ea", "on-tertiary-fixed-variant": "#8c0053", "secondary-container": "#6f00be", "surface-container-high": "#282a30", "on-secondary-fixed": "#2c0051", "primary-container": "#00f2fe", "surface-container-lowest": "#0c0e13", "error-container": "#93000a", "on-primary-container": "#006a70", "tertiary-container": "#ffcede", "tertiary-fixed-dim": "#ffb0cd", "inverse-primary": "#00696f", "primary": "#e0fdff", "tertiary": "#fff5f6", "on-secondary": "#490080", "on-background": "#e2e2ea", "on-primary": "#00373a", "on-tertiary-container": "#b6156f", "surface-bright": "#37393f", "surface-variant": "#33353b", "surface-dim": "#111319", "background": "#111319", "primary-fixed": "#6ff6ff", "error": "#ffb4ab", "on-surface": "#e2e2ea", "on-tertiary": "#640039", "surface-tint": "#00dce6", "on-surface-variant": "#b9cacb", "outline": "#849495", "outline-variant": "#3a494b", "surface-container": "#1d2025", "on-error-container": "#ffdad6", "tertiary-fixed": "#ffd9e4" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-sm": "0.5rem", "space-md": "1rem", "space-lg": "1.5rem", "space-xs": "0.25rem", "margin-lg": "2rem", "gutter-lg": "1.5rem", "gutter": "1rem", "margin": "1rem", "space-xl": "2.5rem" }, "fontFamily": { "display-hero-mobile": [ "Plus Jakarta Sans" ], "telemetry-code": [ "JetBrains Mono" ], "body-md": [ "Inter" ], "body-sm": [ "Inter" ], "label-caps": [ "JetBrains Mono" ], "headline-lg-mobile": [ "Plus Jakarta Sans" ], "headline-sm": [ "Plus Jakarta Sans" ], "headline-lg": [ "Plus Jakarta Sans" ], "body-lg": [ "Inter" ], "display-hero": [ "Plus Jakarta Sans" ], "telemetry-micro": [ "JetBrains Mono" ], "headline-md": [ "Plus Jakarta Sans" ] }, "fontSize": { "display-hero-mobile": [ "36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" } ], "telemetry-code": [ "13px", { "lineHeight": "18px", "letterSpacing": "-0.01em", "fontWeight": "500" } ], "body-md": [ "14px", { "lineHeight": "20px", "fontWeight": "400" } ], "body-sm": [ "12px", { "lineHeight": "16px", "fontWeight": "400" } ], "label-caps": [ "10px", { "lineHeight": "12px", "letterSpacing": "0.08em", "fontWeight": "600" } ], "headline-lg-mobile": [ "24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" } ], "headline-sm": [ "16px", { "lineHeight": "24px", "fontWeight": "600" } ], "headline-lg": [ "32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600" } ], "body-lg": [ "16px", { "lineHeight": "24px", "fontWeight": "400" } ], "display-hero": [ "56px", { "lineHeight": "64px", "letterSpacing": "-0.03em", "fontWeight": "700" } ], "telemetry-micro": [ "11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "400" } ], "headline-md": [ "20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" } ] } } } };</script></head><body class="bg-surface font-body-md text-on-surface min-h-screen relative selection:bg-primary-container selection:text-on-primary-container"><div class="fixed inset-0 pointer-events-none z-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(111,0,190,0.18),rgba(17,19,25,0)),radial-gradient(ellipse_60%_60%_at_80%_100%,rgba(0,242,254,0.08),rgba(17,19,25,0))]"></div><aside class="fixed left-0 top-9 bottom-0 w-64 bg-surface-container-lowest/80 backdrop-blur-xl z-40 flex flex-col py-space-md"><div class="px-space-md mb-space-md flex items-center justify-between"><span class="font-label-caps text-label-caps uppercase text-on-surface-variant">Active Deck</span><span class="flex h-2 w-2 relative"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-container opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-primary-fixed-dim"></span></span></div><nav class="flex-1 px-space-sm space-y-space-xs" data-active-classes="bg-surface-container-high text-primary font-body-sm"><a aria-current="page" class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg transition-all bg-surface-container-high text-primary font-body-sm" data-path="gemini-agent-chat" href="#"><span class="material-symbols-outlined text-space-lg">smart_toy</span><span>Agent Matrix</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all font-body-sm" data-path="mesh-nodes" href="#"><span class="material-symbols-outlined text-space-lg">hub</span><span>Mesh Topology</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all font-body-sm" data-path="pty-terminal" href="#"><span class="material-symbols-outlined text-space-lg">terminal</span><span>Mark v3 PTY</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all font-body-sm" data-path="finops-ai-insights" href="#"><span class="material-symbols-outlined text-space-lg">insights</span><span>FinOps Engine</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all font-body-sm" data-path="projects-catalog" href="#"><span class="material-symbols-outlined text-space-lg">folder_special</span><span>Workspace Catalog</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all font-body-sm" data-path="system-settings" href="#"><span class="material-symbols-outlined text-space-lg">settings</span><span>Kernel Config</span></a></nav><div class="px-space-md pt-space-md bg-surface-container-lowest/40"><div class="p-space-sm rounded-lg bg-surface-container/60"><div class="flex items-center justify-between mb-space-xs"><span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Kernel Fleet</span><span class="font-telemetry-micro text-telemetry-micro text-primary-fixed-dim">v4.19-orb</span></div><div class="w-full bg-surface-container-highest h-1 rounded-full overflow-hidden"><div class="bg-primary-container h-full w-3/4"></div></div></div></div></aside><div class="pl-64"><header class="fixed top-0 left-0 right-0 h-9 z-50 bg-surface-container-lowest/90 backdrop-blur-2xl shadow-[0_1px_8px_rgba(0,0,0,0.4)]"><div class="h-9 w-full px-space-md flex items-center justify-between"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-sm"><img alt="Gaia WebOS Core Logo" class="h-5 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXwFC4zcCDAxHJS7aAPjwLLxKxIhUBHMlcf1xLUmZ7EJZvX788hcJ1x0kAeMxScHUmWuspxV6WZ6LAUl0H5IR_r8k7zZG2c4I8XrBXFptB6ckDIdBNMG0ejgs4kNRStHJK_-PMe2N1QFBMPGmUqTglxiN3OeDvHDespXsLB0ja25dryXYDdhCaBPX_kIKOnqV8e5xnEgl1kVjl6UaLGK6Q40TPeq4TZMFwVYZc3Yx9QAdHVLD76Zdr7A"/><span class="font-headline-sm text-headline-sm text-primary tracking-wider">GAIA</span></div><span class="text-outline-variant font-telemetry-micro text-telemetry-micro">/</span><nav class="hidden sm:flex items-center gap-space-md" data-active-classes="text-primary font-body-sm"><a aria-current="page" class="transition-colors text-primary font-body-sm" data-path="gemini-agent-chat" href="#">Matrix</a><a class="font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="mesh-nodes" href="#">Tailscale</a><a class="font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="pty-terminal" href="#">Terminal</a><a class="font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="finops-ai-insights" href="#">FinOps</a><a class="font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="projects-catalog" href="#">Projects</a></nav></div><div class="flex items-center gap-space-md"><div class="hidden md:flex items-center gap-space-xs px-space-sm py-0.5 rounded-full bg-surface-container-high/60"><span class="material-symbols-outlined text-primary-fixed-dim text-sm">vpn_lock</span><span class="font-telemetry-micro text-telemetry-micro text-on-surface">100.90.55.5</span></div><div class="hidden lg:flex items-center gap-space-md font-telemetry-micro text-telemetry-micro text-on-surface-variant"><div class="flex items-center gap-space-xs"><span class="text-primary-fixed-dim font-bold">CPU</span><span>28%</span></div><div class="flex items-center gap-space-xs"><span class="text-secondary font-bold">RAM</span><span>6.2GB</span></div></div><div class="flex items-center gap-space-sm"><span class="font-telemetry-code text-telemetry-code text-on-surface font-semibold">21:42 UTC</span><img alt="Profile" class="w-6 h-6 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7uVV9LzuJZYsh_PMpBaziiYSH3OjuOQfepjH82pH4TR_zPib7pAIf_i0MO6tk-qGn3cniYRuro-SKxuGDG5CeG2MyrLK4_EuNnwLXujC_egGis-RZPx2ZUlg6a7_WEfzzwOjYBoLsNFvJfPj-0OPJr8YPt7Md-XR48h9M5qzdhKZCk6I0rW6ENTdPXR36zIixPHRwFkQAp-gg9BoEdMF2t9dLWbrujjwiivooRiniQpRwYKEDmqAWng"/></div></div></div></header><main class="relative w-full pt-9 pb-28 px-space-lg min-h-screen bg-transparent z-10"><div class="flex flex-col w-full">
+<!-- Desktop Window Chassis (Elevated Glass OS Window) -->
+<div class="w-full rounded-xl bg-surface-container-low/95 backdrop-blur-2xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.85)] flex flex-col overflow-hidden relative">
+<!-- Window Titlebar / Chrome -->
+<div class="h-10 px-space-md bg-surface-container-lowest/90 flex items-center justify-between select-none">
+<div class="flex items-center gap-space-md">
+<!-- Traffic lights -->
+<div class="flex items-center gap-space-xs">
+<button aria-label="Close window" class="w-3 h-3 rounded-full bg-[#FF5F56] flex items-center justify-center text-[8px] text-surface-container-lowest opacity-90 hover:opacity-100 transition-opacity" type="button">✕</button>
+<button aria-label="Minimize window" class="w-3 h-3 rounded-full bg-[#FFBD2E] flex items-center justify-center text-[8px] text-surface-container-lowest opacity-90 hover:opacity-100 transition-opacity" type="button">-</button>
+<button aria-label="Maximize window" class="w-3 h-3 rounded-full bg-[#27C93F] flex items-center justify-center text-[8px] text-surface-container-lowest opacity-90 hover:opacity-100 transition-opacity" type="button">+</button>
+</div>
+<div class="flex items-center gap-space-sm pl-space-xs">
+<span class="font-telemetry-micro text-telemetry-micro text-outline uppercase tracking-wider font-semibold">GAIA::DECK_01</span>
+<span class="text-surface-container-highest">/</span>
+<span class="font-headline-sm text-headline-sm text-primary flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-sm text-primary-fixed-dim" style="font-variation-settings: 'FILL' 1;">neurology</span>
+            Gemini Enterprise Matrix
+          </span>
+</div>
+</div>
+<!-- Active Session Status Badge -->
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-space-xs px-space-sm py-0.5 rounded-full bg-surface-container-high">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container shadow-[0_0_8px_#00f2fe] animate-pulse"></span>
+<span class="font-label-caps text-label-caps text-on-surface-variant tracking-wider uppercase">Agent Active: gemini-1.5-pro-002</span>
+</div>
+<div class="flex items-center gap-space-xs text-on-surface-variant">
+<button class="p-1 rounded hover:bg-surface-container-high transition-colors" title="Split Screen" type="button">
+<span class="material-symbols-outlined text-sm">vertical_split</span>
+</button>
+<button class="p-1 rounded hover:bg-surface-container-high transition-colors" title="Diagnostics Console" type="button">
+<span class="material-symbols-outlined text-sm">terminal</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Main Window Content Split Grid -->
+<div class="grid grid-cols-12 min-h-[760px]">
+<!-- LEFT SUB-PANE: Session Navigation & Catalog -->
+<aside class="col-span-12 lg:col-span-3 bg-surface-container-lowest/60 p-space-md flex flex-col justify-between">
+<div class="space-y-space-lg">
+<!-- Workspace Header & Action -->
+<div class="flex items-center justify-between">
+<div>
+<p class="font-label-caps text-label-caps text-outline uppercase">Sub-Routine</p>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Workspace Fleet</h3>
+</div>
+<button class="p-space-xs rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-primary transition-colors" title="New Session Thread" type="button">
+<span class="material-symbols-outlined text-lg">add</span>
+</button>
+</div>
+<!-- Chat Sessions List -->
+<div>
+<div class="flex items-center justify-between mb-space-xs">
+<span class="font-label-caps text-label-caps text-outline uppercase tracking-wider">Mission Threads</span>
+<span class="font-telemetry-micro text-telemetry-micro text-on-surface-variant">3 Active</span>
+</div>
+<div class="space-y-space-xs">
+<!-- Active Chat Item -->
+<div class="p-space-sm rounded-lg bg-surface-container-high/90 text-primary shadow-sm flex items-start gap-space-sm cursor-pointer group">
+<span class="material-symbols-outlined text-base text-primary-fixed-dim mt-0.5" style="font-variation-settings: 'FILL' 1;">security</span>
+<div class="min-w-0 flex-1">
+<p class="font-headline-sm text-body-sm text-primary font-semibold truncate">Tailscale Security Audit</p>
+<p class="font-telemetry-micro text-telemetry-micro text-on-surface-variant">ec2-m7i-flex • Pending sync</p>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container shadow-[0_0_6px_#00f2fe] mt-1.5"></span>
+</div>
+<!-- Chat Item 2 -->
+<div class="p-space-sm rounded-lg bg-surface-container/40 hover:bg-surface-container text-on-surface-variant hover:text-on-surface flex items-start gap-space-sm cursor-pointer transition-colors group">
+<span class="material-symbols-outlined text-base text-outline group-hover:text-secondary mt-0.5">build_circle</span>
+<div class="min-w-0 flex-1">
+<p class="font-body-sm text-body-sm text-on-surface truncate">Refactor Pipeline Mark v3</p>
+<p class="font-telemetry-micro text-telemetry-micro text-outline">12 agents invoked • 42m ago</p>
+</div>
+</div>
+<!-- Chat Item 3 -->
+<div class="p-space-sm rounded-lg bg-surface-container/40 hover:bg-surface-container text-on-surface-variant hover:text-on-surface flex items-start gap-space-sm cursor-pointer transition-colors group">
+<span class="material-symbols-outlined text-base text-outline group-hover:text-primary-fixed-dim mt-0.5">monitoring</span>
+<div class="min-w-0 flex-1">
+<p class="font-body-sm text-body-sm text-on-surface truncate">FinOps Analysis Oct</p>
+<p class="font-telemetry-micro text-telemetry-micro text-outline">Saved +$412.80/mo • Yesterday</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Skills Catalog Sub-Section -->
+<div>
+<div class="flex items-center justify-between mb-space-xs">
+<span class="font-label-caps text-label-caps text-outline uppercase tracking-wider">Agent Skills Catalog</span>
+<span class="font-telemetry-micro text-telemetry-micro text-primary-fixed-dim">9 Loaded</span>
+</div>
+<div class="grid grid-cols-2 gap-space-xs">
+<div class="p-space-xs rounded-md bg-surface-container/50 hover:bg-surface-container-high transition-colors cursor-pointer flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-sm text-primary-container">lock_open</span>
+<span class="font-telemetry-micro text-telemetry-micro text-on-surface">TailnetACL</span>
+</div>
+<div class="p-space-xs rounded-md bg-surface-container/50 hover:bg-surface-container-high transition-colors cursor-pointer flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-sm text-secondary">memory</span>
+<span class="font-telemetry-micro text-telemetry-micro text-on-surface">LLVM Cross</span>
+</div>
+<div class="p-space-xs rounded-md bg-surface-container/50 hover:bg-surface-container-high transition-colors cursor-pointer flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-sm text-tertiary-fixed-dim">attach_money</span>
+<span class="font-telemetry-micro text-telemetry-micro text-on-surface">FinOpsMeter</span>
+</div>
+<div class="p-space-xs rounded-md bg-surface-container/50 hover:bg-surface-container-high transition-colors cursor-pointer flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-sm text-primary-fixed-dim">dns</span>
+<span class="font-telemetry-micro text-telemetry-micro text-on-surface">EKS Orch</span>
+</div>
+</div>
+</div>
+<!-- Project Repositories Sub-Section -->
+<div>
+<span class="font-label-caps text-label-caps text-outline uppercase tracking-wider block mb-space-xs">Mounted Repos</span>
+<div class="space-y-1">
+<div class="flex items-center justify-between px-space-xs py-1 text-on-surface-variant hover:text-on-surface">
+<span class="font-telemetry-code text-telemetry-code flex items-center gap-1.5">
+<span class="material-symbols-outlined text-xs text-outline">emoji_symbols</span>
+                  core-kernel-v4
+                </span>
+<span class="font-telemetry-micro text-telemetry-micro text-outline">main*</span>
+</div>
+<div class="flex items-center justify-between px-space-xs py-1 text-on-surface-variant hover:text-on-surface">
+<span class="font-telemetry-code text-telemetry-code flex items-center gap-1.5">
+<span class="material-symbols-outlined text-xs text-outline">emoji_symbols</span>
+                  gaia-mesh-daemon
+                </span>
+<span class="font-telemetry-micro text-telemetry-micro text-outline">v2.1</span>
+</div>
+</div>
+</div>
+</div>
+<!-- System Agent Health Telemetry Capsule -->
+<div class="p-space-sm rounded-xl bg-surface-container/80 space-y-space-xs mt-space-md">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-outline uppercase">Neural Core</span>
+<span class="font-telemetry-micro text-telemetry-micro text-primary-fixed-dim">Gemini-1.5-Pro</span>
+</div>
+<div class="flex items-center justify-between font-telemetry-code text-telemetry-code">
+<span class="text-on-surface-variant">Context Memory</span>
+<span class="text-on-surface font-semibold">24.6k / 32k</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-primary-container to-secondary-container w-[76%]"></div>
+</div>
+</div>
+</aside>
+<!-- CENTRAL CONVERSATION STREAM & ACTION MATRIX -->
+<section class="col-span-12 lg:col-span-9 flex flex-col justify-between bg-surface-container-lowest/30 relative">
+<!-- Stream Messages Scrollable Area -->
+<div class="flex-1 p-space-lg space-y-space-lg overflow-y-auto max-h-[640px]">
+<!-- Stream Anchor Info -->
+<div class="flex items-center justify-center">
+<div class="px-space-md py-1 rounded-full bg-surface-container/80 shadow-sm flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-xs text-primary">verified_user</span>
+<span class="font-telemetry-micro text-telemetry-micro text-on-surface-variant">Encrypted Session Matrix • Tailnet E2E Activated</span>
+</div>
+</div>
+<!-- USER MESSAGE -->
+<div class="flex justify-end items-start gap-space-md">
+<div class="max-w-2xl bg-surface-container-high/90 text-on-surface rounded-2xl rounded-tr-sm p-space-md shadow-md space-y-space-xs">
+<div class="flex items-center justify-between gap-space-md">
+<span class="font-label-caps text-label-caps text-primary-fixed-dim tracking-wider uppercase">Operator::Deck</span>
+<span class="font-telemetry-micro text-telemetry-micro text-outline">21:44:02 UTC</span>
+</div>
+<p class="font-body-md text-body-md text-primary font-medium">
+                Executar verificação de segurança no cluster Tailscale e compilar novo binário de produção.
+              </p>
+<div class="flex items-center gap-space-xs pt-space-xs">
+<span class="px-space-xs py-0.5 rounded bg-surface-container font-telemetry-micro text-telemetry-micro text-on-surface-variant">Target: aarch64</span>
+<span class="px-space-xs py-0.5 rounded bg-surface-container font-telemetry-micro text-telemetry-micro text-on-surface-variant">Env: prod-eu-west-1</span>
+</div>
+</div>
+<div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary-container shadow-sm flex-shrink-0">
+<span class="material-symbols-outlined text-base">person</span>
+</div>
+</div>
+<!-- GEMINI 1.5 PRO AI RESPONSE -->
+<div class="flex items-start gap-space-md">
+<div class="w-8 h-8 rounded-lg bg-primary-container text-on-primary flex items-center justify-center shadow-[0_0_12px_rgba(0,242,254,0.4)] flex-shrink-0">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">neurology</span>
+</div>
+<div class="flex-1 max-w-4xl space-y-space-md">
+<!-- Agent Meta Header -->
+<div class="flex items-center gap-space-sm">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Gemini 1.5 Pro</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high font-telemetry-micro text-telemetry-micro text-primary">Autonomous Agent Engine</span>
+<span class="font-telemetry-micro text-telemetry-micro text-outline">320ms execution plan</span>
+</div>
+<!-- Agent Analysis Breakdown Card -->
+<div class="p-space-md rounded-xl bg-surface-container-low shadow-sm space-y-space-md">
+<div class="flex items-center justify-between">
+<h4 class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-xs text-primary-container">analytics</span>
+                    Multi-Vector Agent Analysis Plan
+                  </h4>
+<span class="font-telemetry-micro text-telemetry-micro text-primary-fixed-dim">All 3 checks passed</span>
+</div>
+<!-- Step-by-Step Timeline -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-sm">
+<!-- Step 1 -->
+<div class="p-space-sm rounded-lg bg-surface-container/60 space-y-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-telemetry-micro text-telemetry-micro text-outline">PHASE 01</span>
+<span class="material-symbols-outlined text-sm text-primary-container">check_circle</span>
+</div>
+<p class="font-headline-sm text-body-sm text-on-surface font-semibold">ACL Node Audit</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Varedura de 14 nós mesh ativos. Nenhuma rota exposta encontrada.</p>
+</div>
+<!-- Step 2 -->
+<div class="p-space-sm rounded-lg bg-surface-container/60 space-y-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-telemetry-micro text-telemetry-micro text-outline">PHASE 02</span>
+<span class="material-symbols-outlined text-sm text-primary-container">check_circle</span>
+</div>
+<p class="font-headline-sm text-body-sm text-on-surface font-semibold">Rust Toolchain Setup</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">LLVM 18 cross-compiler pré-aquecido no nó de build aarch64.</p>
+</div>
+<!-- Step 3 -->
+<div class="p-space-sm rounded-lg bg-surface-container/60 space-y-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-telemetry-micro text-telemetry-micro text-outline">PHASE 03</span>
+<span class="material-symbols-outlined text-sm text-secondary animate-pulse">hourglass_top</span>
+</div>
+<p class="font-headline-sm text-body-sm text-on-surface font-semibold">Binary Packaging</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Aguardando aprovação de autorização de CPU elevada.</p>
+</div>
+</div>
+</div>
+<!-- INTERACTIVE ACTION APPROVAL CARD (Primary Attention Magnet) -->
+<div class="p-space-md rounded-xl bg-surface-container/95 shadow-xl relative overflow-hidden transition-all duration-300" id="approvalCard">
+<!-- Atmospheric backlight glow -->
+<div class="absolute -right-20 -top-20 w-48 h-48 rounded-full bg-primary-container/10 blur-3xl pointer-events-none"></div>
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md mb-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="p-2 rounded-lg bg-primary-container/20 text-primary-container">
+<span class="material-symbols-outlined text-xl">bolt</span>
+</div>
+<div>
+<div class="flex items-center gap-space-xs">
+<span class="font-label-caps text-label-caps text-primary-container uppercase tracking-wider font-semibold">Action Authorization Required</span>
+<span class="px-1.5 py-0.5 rounded bg-surface-container-high font-telemetry-micro text-telemetry-micro text-on-surface">STAGE-GATE</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Compilação e Deploy no Cluster Seguro</h4>
+</div>
+</div>
+<!-- Quick Telemetry Specs -->
+<div class="flex items-center gap-space-md font-telemetry-code text-telemetry-code">
+<div class="text-left">
+<p class="font-label-caps text-label-caps text-outline uppercase">Est. Runtime</p>
+<p class="text-on-surface font-semibold">3m 12s</p>
+</div>
+<div class="w-px h-6 bg-surface-container-highest"></div>
+<div class="text-left">
+<p class="font-label-caps text-label-caps text-outline uppercase">Cost Impact</p>
+<p class="text-primary-fixed-dim font-semibold">+$0.02 USD</p>
+</div>
+</div>
+</div>
+<!-- Node & Command Details Box -->
+<div class="p-space-sm rounded-lg bg-surface-container-lowest/80 space-y-space-xs font-telemetry-code text-telemetry-code mb-space-md">
+<div class="flex items-center justify-between text-outline">
+<span class="text-on-surface-variant">Target Node:</span>
+<span class="text-primary font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-xs text-primary-container">dns</span>
+                      ec2-m7i-flex.mesh.internal
+                    </span>
+</div>
+<div class="flex items-start justify-between text-outline gap-space-md pt-1">
+<span class="text-on-surface-variant flex-shrink-0">Payload Exec:</span>
+<span class="text-secondary-fixed-dim text-right break-all">mark-v3 build --release --target=aarch64 --strip</span>
+</div>
+</div>
+<!-- Approval Buttons -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm pt-space-xs">
+<div class="flex items-center gap-space-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-sm text-primary-fixed-dim">verified</span>
+<span class="font-telemetry-micro text-telemetry-micro">Signed by Operator Token #892-A</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<!-- Reject Button -->
+<button class="px-space-md py-2 rounded-lg bg-surface-container-high hover:bg-error-container text-error hover:text-on-error-container font-headline-sm text-body-sm font-semibold transition-all duration-150 flex items-center gap-space-xs" onclick="rejectExecution()" type="button">
+<span class="material-symbols-outlined text-sm">close</span>
+                      Rejeitar
+                    </button>
+<!-- Approve Button -->
+<button class="px-space-lg py-2 rounded-lg bg-gradient-to-r from-primary-container to-primary-fixed-dim text-on-primary-container font-headline-sm text-body-sm font-semibold shadow-[0_0_20px_rgba(0,242,254,0.35)] hover:shadow-[0_0_28px_rgba(0,242,254,0.6)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-150 flex items-center gap-space-xs" onclick="approveExecution()" type="button">
+<span class="material-symbols-outlined text-sm">check</span>
+                      Aprovar Execução
+                    </button>
+</div>
+</div>
+</div>
+<!-- Markdown Code Output Block -->
+<div class="rounded-xl bg-surface-container-lowest overflow-hidden shadow-md">
+<div class="px-space-md py-space-xs bg-surface-container-high flex items-center justify-between">
+<div class="flex items-center gap-space-sm font-telemetry-code text-telemetry-micro text-on-surface-variant">
+<span class="material-symbols-outlined text-xs text-primary-container">code</span>
+<span>tailscale_mesh_audit.rs</span>
+<span class="px-1.5 py-0.2 rounded bg-surface-container text-outline">Rust 2024</span>
+</div>
+<button class="px-space-xs py-1 rounded hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1 font-telemetry-micro text-telemetry-micro" onclick="copyCodePayload(this)" type="button">
+<span class="material-symbols-outlined text-xs">content_copy</span>
+<span>Copy</span>
+</button>
+</div>
+<!-- Syntax Highlighted Container (JetBrains Mono) -->
+<pre class="p-space-md font-telemetry-code text-telemetry-code text-on-surface overflow-x-auto leading-relaxed"><code><span class="text-secondary-container font-bold">use</span> gaia_mesh::{TailnetPeer, AuditSeverity, EngineResult};
+
+<span class="text-primary-fixed-dim font-semibold">pub async fn</span> <span class="text-primary-container font-bold">verify_mesh_node_posture</span>(peer: &amp;TailnetPeer) -&gt; EngineResult&lt;()&gt; {
+    <span class="text-outline">// Verify WireGuard cryptographic key rotation interval</span>
+    <span class="text-secondary-fixed-dim">if</span> peer.key_age_hours() &gt; <span class="text-secondary">720</span> {
+        <span class="text-error">return</span> Err(AuditSeverity::ExpiredKeyEnvelope);
+    }
+
+    <span class="text-outline">// Enforce strict eBPF packet isolation for marked daemon</span>
+    peer.enforce_cgroup_v2_filter(<span class="text-tertiary-fixed-dim">"mark_v3_runtime"</span>).<span class="text-secondary-fixed-dim">await</span>?;
+    <span class="text-primary-container">gaia_logger::emit</span>(<span class="text-tertiary-fixed-dim">"[OK] Node posture certified: aarch64 ready"</span>);
+    Ok(())
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<!-- BOTTOM INPUT BAR: Frosted Glass Command Prompt -->
+<div class="p-space-md bg-surface-container-lowest/80 backdrop-blur-2xl">
+<form class="relative flex flex-col gap-space-xs" onsubmit="handleCommandSubmit(event)">
+<!-- Metadata controls over prompt -->
+<div class="flex items-center justify-between px-space-xs">
+<div class="flex items-center gap-space-sm">
+<!-- Model Selector Dropdown Pill -->
+<div class="relative group">
+<button class="flex items-center gap-space-xs px-space-sm py-1 rounded-full bg-surface-container hover:bg-surface-container-high text-primary font-telemetry-micro text-telemetry-micro transition-colors" type="button">
+<span class="material-symbols-outlined text-xs text-primary-container" style="font-variation-settings: 'FILL' 1;">neurology</span>
+<span>Gemini 1.5 Pro (32k context)</span>
+<span class="material-symbols-outlined text-xs text-outline">expand_more</span>
+</button>
+</div>
+<!-- Autonomous Agent Capability Flag -->
+<span class="hidden sm:flex items-center gap-1 font-telemetry-micro text-telemetry-micro text-outline">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-fixed-dim"></span>
+                  Tools: LLVM, Tailscale API, AWS KMS
+                </span>
+</div>
+<!-- Context Usage Pill -->
+<span class="font-telemetry-micro text-telemetry-micro text-on-surface-variant font-medium">
+                Token Budget: 76% Available
+              </span>
+</div>
+<!-- Command Input Box -->
+<div class="flex items-center gap-space-sm p-space-sm rounded-xl bg-surface-container-high/60 focus-within:bg-surface-container-high focus-within:shadow-[0_0_16px_rgba(0,242,254,0.18)] transition-all">
+<!-- Prompt Prefix Marker -->
+<div class="hidden sm:flex items-center pl-space-xs select-none">
+<span class="font-telemetry-code text-telemetry-code text-primary-container font-semibold">gaia:~$</span>
+</div>
+<!-- Prompt Input Field -->
+<input class="flex-1 bg-transparent font-telemetry-code text-telemetry-code text-on-surface placeholder:text-outline focus:outline-none px-space-xs" id="agentInput" placeholder="Instrua o Gemini ou acione um skill do sistema..." type="text" value="mark-v3 deploy --region=sa-east-1 --verify-acl"/>
+<!-- Action Bar / Buttons -->
+<div class="flex items-center gap-space-xs">
+<!-- Voice Wave Mic -->
+<button class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="Voice Dictation" type="button">
+<span class="material-symbols-outlined text-lg">graphic_eq</span>
+</button>
+<!-- Attachment / File Link -->
+<button class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="Attach Workspace Artifact" type="button">
+<span class="material-symbols-outlined text-lg">attach_file</span>
+</button>
+<!-- Glowing Send Action Button -->
+<button class="p-2 rounded-lg bg-gradient-to-r from-primary-container to-primary-fixed-dim text-on-primary-container shadow-[0_0_16px_rgba(0,242,254,0.4)] hover:shadow-[0_0_24px_rgba(0,242,254,0.7)] transition-all flex items-center justify-center" type="submit">
+<span class="material-symbols-outlined text-lg">arrow_upward</span>
+</button>
+</div>
+</div>
+<!-- Hint Meta -->
+<div class="flex items-center justify-between px-space-xs">
+<span class="font-telemetry-micro text-telemetry-micro text-outline">Press [Enter] to dispatch to agent matrix • [Shift+Enter] for multiline prompt</span>
+<span class="font-telemetry-micro text-telemetry-micro text-outline">Mark v3 Autonomous Sandbox</span>
+</div>
+</form>
+</div>
+</section>
+</div>
+</div>
+</div>
+<script>
+  function approveExecution() {
+    const card = document.getElementById('approvalCard');
+    if (!card) return;
+    card.innerHTML = `
+      <div class="p-space-sm flex items-center justify-between bg-surface-container-high rounded-lg text-primary">
+        <div class="flex items-center gap-space-sm">
+          <span class="material-symbols-outlined text-xl text-primary-container">check_circle</span>
+          <div>
+            <p class="font-headline-sm text-body-sm font-semibold">Execução Aprovada pelo Operador</p>
+            <p class="font-telemetry-micro text-telemetry-micro text-on-surface-variant">Disparado no nó ec2-m7i-flex • Build aarch64 em andamento...</p>
+          </div>
+        </div>
+        <span class="font-telemetry-code text-telemetry-code text-primary-container font-semibold animate-pulse">Running: PID 48102</span>
+      </div>
+    `;
+  }
+
+  function rejectExecution() {
+    const card = document.getElementById('approvalCard');
+    if (!card) return;
+    card.innerHTML = `
+      <div class="p-space-sm flex items-center justify-between bg-error-container/40 rounded-lg text-error">
+        <div class="flex items-center gap-space-sm">
+          <span class="material-symbols-outlined text-xl">block</span>
+          <div>
+            <p class="font-headline-sm text-body-sm font-semibold">Execução Cancelada</p>
+            <p class="font-telemetry-micro text-telemetry-micro text-on-surface-variant">Ação revogada. Nenhuma modificação realizada no cluster seguro.</p>
+          </div>
+        </div>
+        <span class="font-telemetry-code text-telemetry-code text-error font-semibold">Status: Revoked</span>
+      </div>
+    `;
+  }
+
+  function copyCodePayload(btn) {
+    const textSpan = btn.querySelector('span:last-child');
+    if (textSpan) {
+      const prev = textSpan.innerText;
+      textSpan.innerText = 'Copied!';
+      setTimeout(() => { textSpan.innerText = prev; }, 1500);
+    }
+  }
+
+  function handleCommandSubmit(e) {
+    e.preventDefault();
+    const input = document.getElementById('agentInput');
+    if (!input || !input.value.trim()) return;
+    input.value = '';
+  }
+</script></main></div><div class="fixed bottom-space-lg left-1/2 -translate-x-1/2 z-50 pointer-events-none"><div class="pointer-events-auto flex items-center gap-space-sm px-space-md py-space-sm rounded-full bg-surface-container-lowest/80 backdrop-blur-2xl shadow-[0_24px_48px_-12px_rgba(0,0,0,0.8)]"><a class="group relative flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-surface-container/60 hover:bg-surface-container-high hover:scale-125 transition-all duration-200 text-on-surface hover:text-primary" data-path="gemini-agent-chat" href="#" title="Gemini Agent Chat"><span class="material-symbols-outlined text-2xl">neurology</span><span class="absolute -bottom-1 w-1 h-1 rounded-full bg-primary-container shadow-[0_0_8px_#00f2fe]"></span></a><a class="group relative flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-surface-container/60 hover:bg-surface-container-high hover:scale-125 transition-all duration-200 text-on-surface hover:text-primary" data-path="mesh-nodes" href="#" title="Tailscale Mesh Nodes"><span class="material-symbols-outlined text-2xl">lan</span></a><a class="group relative flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-surface-container/60 hover:bg-surface-container-high hover:scale-125 transition-all duration-200 text-on-surface hover:text-primary" data-path="pty-terminal" href="#" title="Mark v3 PTY Terminal"><span class="material-symbols-outlined text-2xl">terminal</span></a><a class="group relative flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-surface-container/60 hover:bg-surface-container-high hover:scale-125 transition-all duration-200 text-on-surface hover:text-primary" data-path="finops-ai-insights" href="#" title="FinOps &amp; AI Insights"><span class="material-symbols-outlined text-2xl">monitoring</span></a><a class="group relative flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-surface-container/60 hover:bg-surface-container-high hover:scale-125 transition-all duration-200 text-on-surface hover:text-primary" data-path="projects-catalog" href="#" title="Projects Catalog"><span class="material-symbols-outlined text-2xl">folder</span></a><div class="w-px h-6 bg-surface-container-highest my-auto mx-space-xs"></div><a class="group relative flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-surface-container/60 hover:bg-surface-container-high hover:scale-125 transition-all duration-200 text-on-surface hover:text-primary" data-path="system-settings" href="#" title="Settings"><span class="material-symbols-outlined text-2xl">tune</span></a></div></div></body></html>
