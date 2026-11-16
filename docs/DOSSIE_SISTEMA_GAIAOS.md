@@ -2,10 +2,10 @@
 
 > **Distribuição:** Gaia OS 1.0 (Debian GNU/Linux 12 Bookworm Customizado)  
 > **Plataforma:** Gateway NV55C — Intel Core i7 M 640 @ 2.80GHz (Westmere/Arrandale, 2C/4T)  
+> **Kernel Ativo:** Linux `6.1.0-55-amd64` (`6.1.192-1`, 2026-11-14)  
 > **Memória:** 5.5 GiB DDR3 física + 6.0 GiB zRAM (compressão `zstd`)  
-> **Interface Gráfica:** KDE Plasma (X11)  
-> **Modelo Agêntico de Manutenção:** Antigravity / Gemini 3.8 Flash  
-> **Data de Atualização:** Novembro de 2026  
+> **Interface Gráfica:** KDE Plasma `5.27.5` (Sessão ativa: **Wayland** via SDDM `0.19.0-5`, fallback X11)  
+> **Data de Atualização:** 16 de Novembro de 2026  
 
 ---
 
@@ -21,19 +21,22 @@ Diferente de distribuições convencionais que acumulam serviços em segundo pla
 
 ---
 
-## 2. Auditoria de Atualizações do Sistema (Kernel 6.1.190-1 & Chrome 157)
+## 2. Auditoria e Histórico de Atualizações do Sistema e Segurança
 
-Em Novembro de 2026, o sistema recebeu atualizações do Debian Bookworm e do Google Chrome. Uma auditoria detalhada foi realizada para verificar compatibilidade e necessidade de ajustes:
+Em Novembro de 2026, o sistema recebeu sucessivas atualizações do Debian Bookworm, Google Chrome, Node.js e ferramentas de desenvolvimento. Cada ciclo foi auditado para garantir compatibilidade com as mitigações e otimizações do Gaia OS:
 
-### 2.1. Kernel Linux 6.1.190-1 (`linux-image-6.1.0-54-amd64`)
-* **Changelog e CVEs:** O pacote incorporou patches upstream para dezenas de vulnerabilidades de ALSA, temporizadores, `mm/vmscan` (CVE-2026-89753), `mm/migrate` (CVE-2026-89756), `memcg` (CVE-2026-89752), NFS/NFSD e MPTCP syncookies (CVE-2026-97568).
-* **Diagnóstico de MGLRU:** A inspeção do `/boot/config-6.1.0-54-amd64` revelou que `CONFIG_LRU_GEN=y`, porém `# CONFIG_LRU_GEN_ENABLED is not set`. Isso significa que, sem a nossa configuração persistente, o novo kernel inicializaria com o MGLRU **desativado por padrão** (`0x0000`).
-  * **Conclusão:** As configurações criadas em `/etc/tmpfiles.d/gaia-mglru.conf` e `/etc/sysctl.d/99-performance.conf` **NÃO se tornaram obsoletas**, sendo **fundamentais** para garantir que a ativação do MGLRU (`0x0007`) persista no reboot para o novo kernel.
-* **Escudo CVE-2026-98432:** O drop antecipado na tabela `raw` do Netfilter (`gaia-cve-2026-98432-shield.nft`) permanece ativo como primeira linha de defesa, descartando pacotes maliciosos com opções IPv4 antes do processamento pela pilha IP/TCP.
+### 2.1. Kernel Linux (`6.1.190-1` -> `6.1.192-1` / `linux-image-6.1.0-55-amd64`)
+* **Linha do Tempo:** Atualizado para `6.1.0-54-amd64` (`6.1.190-1`) em 10/11/2026 e posteriormente para **`6.1.0-55-amd64` (`6.1.192-1`, build 2026-11-14)** em 16/11/2026 (junto com `linux-libc-dev` `6.1.192-1`).
+* **Changelog e CVEs:** Incorporou patches upstream para vulnerabilidades de ALSA, temporizadores, `mm/vmscan` (CVE-2026-89753), `mm/migrate` (CVE-2026-89756), `memcg` (CVE-2026-89752), NFS/NFSD e MPTCP syncookies (CVE-2026-97568).
+* **Diagnóstico de MGLRU e zRAM:** A inspeção do `/boot/config-6.1.0-55-amd64` confirmou que `CONFIG_LRU_GEN=y` e `# CONFIG_LRU_GEN_ENABLED is not set` (e `CONFIG_ZRAM=m` com `CONFIG_ZRAM_WRITEBACK=y`). Sem nossa configuração persistente, o kernel inicializaria com o MGLRU desativado (`0x0000`).
+  * **Conclusão:** `/etc/tmpfiles.d/gaia-mglru.conf` e `/etc/sysctl.d/99-performance.conf` permanecem essenciais e ativos no boot, mantendo MGLRU em `0x0007` e zRAM em `6.0 GiB` (`zstd`).
+* **Escudo CVE-2026-98432:** O drop antecipado na tabela `raw` do Netfilter (`gaia-cve-2026-98432-shield.nft`) continua operacional no kernel `6.1.0-55-amd64` (comprovado via simulação real em `gaia-sec-verify`).
 
-### 2.2. Google Chrome 157 (`157.0.8103.50-1`)
-* **Políticas Corporativas de Desempenho:** A política legado `HighEfficiencyModeEnabled` continua válida. No entanto, o Chrome 157 introduziu a política `MemorySaverModeSavings` para configurar o nível de agressividade no descarte de abas inativas.
-* **Correção/Aprimoramento Aplicado:** Atualizamos `/etc/opt/chrome/policies/managed/gaia-performance.json` para incluir `"MemorySaverModeSavings": 2` (modo de economia máximo), garantindo que abas em segundo plano sejam descartadas rapidamente para poupar RAM na máquina de 5.5 GiB.
+### 2.2. Pacotes Críticos de Segurança e Runtimes Atualizados (Novembro/2026)
+* **Node.js Global:** Atualizado de `22.23.3` -> `22.23.4` -> **`22.23.5-1nodesource1`** (mitigando CVE-2026-111497 *Node2Shell* e falhas TLS/DNS/Brotli). O script [`tests/verify-security.sh`](file:///home/francisco/Documentos/Projetos/GaiaOS/tests/verify-security.sh) foi corrigido para validar `>= 22.23.4` via `dpkg --compare-versions`.
+* **Criptografia, Rede e Bibliotecas Base:** `openssl` e `libssl3` (`3.0.22-1~deb12u2`), `ca-certificates` (`20250419~deb12u2`), `libssh-4` e `libssh-gcrypt-4` (`0.10.6-0+deb12u3`), `libbrotli1` (`1.0.9-2+deb12u1`), `libexpat1` (`2.5.0-1+deb12u5`), `libsasl2-2` (`2.1.28+dfsg-10+deb12u1`), `libsrt1.5-gnutls` (`1.5.1-1+deb12u2`), `apt` (`2.6.2`), `rsync` (`3.5.0+ds1-0+deb12u1`), `imagemagick` (`8:6.9.11.60+dfsg-1.6+deb12u15`), `ntfs-3g` (`1:2022.10.3-1+deb12u4`), `parted` (`3.5-3+deb12u1`), `openjdk-17` (`17.0.21+9-1~deb12u1`), `postgresql-client-15` (`15.20-0+deb12u1`) e `tzdata` (`2026f-0+deb12u1`).
+* **Google Chrome 157 (`157.0.8103.50-1` -> `157.0.8103.78-1`):** Políticas corporativas em `/etc/opt/chrome/policies/managed/gaia-performance.json` mantidas com `HighEfficiencyModeEnabled: true` e `MemorySaverModeSavings: 2` (descarte agressivo de abas para poupar RAM).
+* **Ferramentas e Navegadores Adicionais:** `firefox` (`160.0~build1` + `firefox-l10n-pt-br`), `google-cloud-cli` (`593.0.0-0`), `code` (`1.146.0`), `cursor` (`3.30.14`), `kiro` (`1.4.154`), `chatgpt` (`26.1111.21308`), `grok-bot` (`1.1.0`). Remoção de `raspi-firmware` desnecessário em `x86_64`.
 
 ---
 
@@ -176,20 +179,46 @@ Ativação e integração do modelo de engenharia de software **Meta Muse Wonder
   * O Vertex AI expõe o modelo via Responses API global (`/publishers/meta/v1/responses`) autenticada com Bearer Tokens de curta duração do Google Cloud.
   * A CLI oficial `muse` (v1.4.15) espera o catálogo em `/muse-code/models` e autenticação com API Key estática.
   * Solução: Implementação do daemon local **`gaia-muse-vertex-bridge`** em Python padrão (porta `127.0.0.1:18787`).
-* **Recursos do Bridge Local:**
-  * **Cache e Renovação de Token:** Executa `gcloud auth print-access-token` para o usuário `francisco` e armazena em cache por 40 minutos com renovação automática em caso de expiração (401).
-  * **Catálogo de Modelos:** Responde a requisições de descoberta (`/muse-code/models`, `/v1/models`) informando a disponibilidade de `muse-wonder-1.0`.
-  * **Streaming SSE Transparente:** Repassa `POST /v1/responses` em tempo real para a nuvem sem buffer intermediário.
-  * **Adaptador OpenAI Chat Completions:** Converte requisições padrão `/v1/chat/completions` (OpenAI format) em requisições Vertex AI Responses API e retroconverte os deltas em chunks SSE, permitindo que qualquer ferramenta ou extensão consuma o Muse Wonder 1.0.
-  * **Pegada de Memória:** ~10.8 MB de RAM (limite forçado via cgroup systemd de 30 MB).
+* **Recursos do Bridge Local (v2 — Resiliente e Serializado):**
+  * **Cache e Renovação de Token:** Executa `gcloud auth print-access-token` para o usuário `francisco` e armazena em cache por 40 minutos com invalidação e renovação automática em caso de HTTP 401.
+  * **Serialização e Backoff (Anti-429):** Fila serializada via `threading.Lock()` com intervalo mínimo (0.8s) e retentativa exponencial automática contra rate-limiting do Vertex AI Serverless.
+  * **Catálogo e Configuração:** Responde a `/muse-code/models`, `/v1/models` e `/muse-code/config` (`schema_version: 1`) eliminando rajadas de retry na inicialização.
+  * **Streaming SSE Transparente e Adaptador OpenAI:** Repassa `POST /v1/responses` em tempo real e traduz `POST /v1/chat/completions` para Vertex AI Responses API com tratamento seguro de `BrokenPipeError`.
+  * **Operação Sob Demanda:** Por solicitação do usuário, o daemon `gaia-muse-bridge.service` foi parado e desabilitado da inicialização automática (`systemctl disable`), sendo reativado sob demanda quando `muse` ou `muse-wonder` for invocado.
 * **CLI Terminal (`muse` e `muse-wonder`):**
   * Binário oficial isolado em `/opt/muse/bin/` (eliminando alertas de bubblewrap sandbox em diretório home).
   * Wrapper universal `/usr/local/bin/muse` injeta `META_API_KEY="gcp-vertex-proxy"` e garante que o bridge está ativo.
-  * Lançador dedicado `/usr/local/bin/muse-wonder` inicia sessões TUI interativas ou executa comandos com reasoning profundo (`high`) e flags de economia de taxa.
+  * Lançador dedicado `/usr/local/bin/muse-wonder` inicia sessões TUI interativas (sem `--disable-reminders`, exclusivo do subcomando `exec`) ou executa prompts headless com reasoning profundo (`high`).
 * **Ambiente VS Code:**
   * Extensão **Continue** (`continue.continue`) instalada e configurada com o provedor OpenAI apontando para `http://127.0.0.1:18787/v1` com janela de contexto de 1 milhão de tokens.
   * Perfil de terminal integrado `"Muse Wonder 1.0"` adicionado a `settings.json`.
   * Atalhos no VS Code: `Ctrl+L` para chat interativo com o modelo e `Ctrl+I` para edição/geração inline de código.
+
+---
+
+### Módulo 7: Ambiente Gráfico KDE Plasma 5.27.5 & Recursos Instalados
+
+O Gaia OS 1.0 utiliza o **KDE Plasma `5.27.5`** (baseado no Debian Bookworm) como ambiente de desktop principal, operando com composição leve e integração completa de portais e temas escuros.
+
+1. **Sessão, Gerenciador de Janelas e Display Manager:**
+   * **Sessão Ativa:** **Wayland** (`Type=wayland`, `Desktop=KDE`, `State=active`) gerenciada pelo **SDDM (`0.19.0-5`)** com tema `sddm-theme-breeze` (`4:5.27.5-2+deb12u2`).
+   * **Compositor KWin:** `kwin-wayland` (`4:5.27.5-3`) como padrão ativo, mantendo `kwin-x11` (`4:5.27.5-3`), `kwin-common` e `kwin-data` como fallback X11.
+   * **Workspace e Portais:** `kde-plasma-desktop` (`5:142`), `plasma-desktop` (`4:5.27.5-2`), `plasma-workspace` (`4:5.27.5-2+deb12u2`), `plasma-workspace-wayland` (`4:5.27.5-2+deb12u2`), `plasma-framework` (`5.103.0-1+deb12u1`), `plasma-integration` (`5.27.5-2`), `kde-cli-tools` (`4:5.27.5.1-2`) e `xdg-desktop-portal-kde` (`5.27.5-2`).
+
+2. **Tema Visual e Estética (Breeze Dark):**
+   * **Look and Feel Ativo:** `org.kde.breezedark.desktop` (configurado em `~/.config/kdeglobals`).
+   * **Pacotes de Estilo:** `breeze` (`4:5.27.5-2`), `breeze-icon-theme` (`4:5.103.0-1`), `breeze-cursor-theme` (`4:5.27.5-2`), `breeze-gtk-theme` (`5.27.5-2`), `kde-style-breeze` (`4:5.27.5-2`), `kwin-style-breeze` (`4:5.27.5-2`) e `kde-style-oxygen-qt5` (`4:5.27.5-2`).
+
+3. **Aplicativos e Utilitários KDE Instalados:**
+   * **Produtividade e Base:** `dolphin` (`4:22.12.3-1` — gerenciador de arquivos), `konsole` (`4:22.12.3-1+deb12u1` — terminal), `kate` (`4:22.12.3-1` — editor avançado), `kde-spectacle` (`22.12.3-1` — capturas de tela) e `kde-baseapps` (`4:22.12.3+5.142`).
+   * **Gerenciamento de Sistema e Hardware:** `plasma-systemmonitor` (`5.27.5-2`), `plasma-discover` (`5.27.5-2+deb12u1`, com `plasma-discover-backend-fwupd` e `plasma-discover-common`), `plasma-nm` (`4:5.27.5-2` — NetworkManager), `plasma-pa` (`4:5.27.5-2` — áudio PulseAudio/PipeWire), `plasma-disks` (`5.27.5-2` — saúde SMART de discos), `plasma-thunderbolt` (`5.27.5-2`), `plasma-vault` (`5.27.5-2` — cofres criptografados), `powerdevil` (`4:5.27.5-2` — gerenciamento de energia), `bluedevil` (`4:5.27.5-2` — Bluetooth), `kscreen` (`4:5.27.5-2` — gerenciamento de telas) e `plasma-browser-integration` (`5.27.5-2`).
+   * **Módulos de Configuração (`System Settings`):** `kde-config-gtk-style`, `kde-config-screenlocker`, `kde-config-sddm`, `kde-config-updates` (`5.27.5-2+deb12u1`), `kde-config-mobile-networking`.
+   * **Módulos Mobile / Nano Presentes:** `plasma-mobile` (`5.27.2-1`), `plasma-mobile-tweaks` (`5.27.2-1`), `plasma-nano` (`5.27.5-2`) e `plasma-settings` (`23.01.0-1`).
+
+4. **Plasmoids e Widgets Ativos no Painel e Área de Trabalho:**
+   * **Área de Trabalho e Painel Principal (`~/.config/plasma-org.kde.plasma.desktop-appletsrc`):** `org.kde.plasma.folder` (Desktop), `org.kde.panel`, `org.kde.plasma.kickoff` (Menu de Aplicativos), `org.kde.plasma.pager` (Áreas de trabalho virtuais), `org.kde.plasma.icontasks` (Gerenciador de tarefas apenas ícones), `org.kde.plasma.digitalclock`, `org.kde.plasma.showdesktop`, `org.kde.plasma.battery` e `org.kde.plasma.marginsseparator`.
+   * **Widget Customizado Instalado pelo Usuário:** `org.kde.plasma.catwalk` em `~/.local/share/plasma/plasmoids/org.kde.plasma.catwalk` (monitor animado de uso de CPU no painel).
+   * **Bandeja do Sistema (`org.kde.plasma.systemtray`):** `org.kde.kscreen`, `org.kde.kdeconnect`, `org.kde.plasma.clipboard`, `org.kde.plasma.keyboardlayout`, `org.kde.plasma.devicenotifier`, `org.kde.plasma.notifications`, `org.kde.plasma.manage-inputmethod`, `org.kde.plasma.volume`, `org.kde.plasma.networkmanagement`, `org.kde.plasma.mediacontroller` e `org.kde.plasma.vault`.
 
 ---
 

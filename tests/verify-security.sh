@@ -67,7 +67,7 @@ check "Bloqueio real de pacotes com Opções IPv4 (ihl > 5 / ireq_opt) comprovad
 echo ""
 echo "--- 3. Testes de Node.js (CVE-2026-111497 'Node2Shell' & CVEs TLS/DNS) ---"
 check "Node.js global (/usr/bin/node) em versão corrigida (>= v22.23.4)" \
-    "[ \"\$(/usr/bin/node -v)\" = \"v22.23.4\" ]"
+    "dpkg --compare-versions \"\$(/usr/bin/node -v | sed 's/^v//')\" ge \"22.23.4\""
 
 check "Node.js do Codex Runtime atualizado localmente para versão corrigida (v24.22.1)" \
     "[ \"\$(/home/francisco/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node -v)\" = \"v24.22.1\" ]"

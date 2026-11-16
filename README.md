@@ -10,8 +10,8 @@ Este repositório centraliza a evolução autônoma, blindagem de segurança, ot
 
 | Prioridade | Alvo / Componente | CVEs Associados | Severidade | Risco Específico na Máquina (`francisco-nv55c`) | Status no Gaia OS |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **P1 (Crítica)** | **Linux Kernel IPv4 TCP / MPTCP** (`6.1.0-53` e `6.1.0-54`) | **CVE-2026-98432** | **CVSS 9.8 (Critical)** | *Use-After-Free (UAF)* por condição de corrida no handshake TCP (`tcp_v4_conn_request` / `ireq_opt` liberado via `kfree()` concorrente a leitor RCU) e listeners MPTCP. A máquina tinha portas expostas e `net.mptcp.enabled = 1`. | **Mitigado & Testado na camada Raw Prerouting** |
-| **P2 (Alta)** | **Node.js Runtimes** (`node:zlib`, `node:dns`, `node:tls`) | **CVE-2026-111497** (*Node2Shell*), **CVE-2026-105482**, **CVE-2026-105483**, **CVE-2026-106069**, **CVE-2026-106072** | **CVSS 9.2 (Critical)** | O runtime embutido em `~/.cache/codex-runtimes/.../bin/node` estava na versão vulnerável **`v24.19.0`** (sujeita a escrita fora de limites no decodificador Brotli e bypass de TLS/DNS). | **Corrigido Localmente (`v24.22.1`) + Runtime Shield** |
+| **P1 (Crítica)** | **Linux Kernel IPv4 TCP / MPTCP** (`6.1.0-53`, `6.1.0-54` e `6.1.0-55`) | **CVE-2026-98432** | **CVSS 9.8 (Critical)** | *Use-After-Free (UAF)* por condição de corrida no handshake TCP (`tcp_v4_conn_request` / `ireq_opt` liberado via `kfree()` concorrente a leitor RCU) e listeners MPTCP. A máquina tinha portas expostas e `net.mptcp.enabled = 1`. | **Mitigado & Testado na camada Raw Prerouting (Kernel `6.1.192-1`)** |
+| **P2 (Alta)** | **Node.js Runtimes** (`node:zlib`, `node:dns`, `node:tls`) | **CVE-2026-111497** (*Node2Shell*), **CVE-2026-105482**, **CVE-2026-105483**, **CVE-2026-106069**, **CVE-2026-106072** | **CVSS 9.2 (Critical)** | Runtime global atualizado para **`v22.23.5`** e runtime embutido do Codex atualizado para **`v24.22.1`** (proteção contra escrita fora de limites no decodificador Brotli e bypass de TLS/DNS). | **Corrigido (`v22.23.5` / `v24.22.1`) + Runtime Shield** |
 | **P3 (Alta — Privacidade)** | **Ativos Críticos, Chaves & Credenciais Locais** | Exposição de Segredos / Escalada Local | **Alta (Privacidade)** | Chaves PEM/SSH (`~/chaves_e_pem`, `~/.ssh`), credenciais cloud (`~/.aws`, `~/.config/gcloud`), segredos OAuth (`~/Downloads/client_secret_*.json` com permissão `0644`), `.env` de projetos e banco PostgreSQL exposto em `0.0.0.0:5432`. | **Blindado & Containers Órfãos Eliminados** |
 | **P4 (Preventiva)** | **PHP Runtime** (*PHP2Shell*) | **CVE-2026-109618**, **CVE-2026-109619**, **CVE-2026-115560** | **CVSS 9.2 (Critical)** | Nenhum runtime PHP está instalado no host. Política preventiva instalada em `/etc/gaiaos/security/99-gaia-php2shell-shield.ini` para bloquear `session.upload_progress` e execução arbitrária caso PHP seja adicionado futuramente. | **Prevenção Ativa** |
 
@@ -26,8 +26,9 @@ Este repositório centraliza a evolução autônoma, blindagem de segurança, ot
    * **Repositório APT Local:** Localizado em `/var/local/gaia-repo`, permitindo instalar e atualizar softwares do sistema sem dependência de rede externa.
    * **`gaia-pkg`:** Construtor offline de pacotes `.deb`.
    * **`gaia-snapshot`:** Gerenciador de pontos de restauração e rollback instantâneo do sistema.
-3. **Serviços Enxutos e Políticas Chrome (Etapa 3):**
-   * **Chrome 157:** Políticas corporativas de descarte agressivo de abas (`HighEfficiencyModeEnabled: true` e `MemorySaverModeSavings: 2`).
+3. **Serviços Enxutos, Segurança Contínua e Políticas Chrome (Etapa 3):**
+   * **Chrome 157 (`157.0.8103.78-1`):** Políticas corporativas de descarte agressivo de abas (`HighEfficiencyModeEnabled: true` e `MemorySaverModeSavings: 2`).
+   * **Atualizações de Segurança (Nov/2026):** Kernel `6.1.0-55-amd64` (`6.1.192-1`), OpenSSL `3.0.22-1~deb12u2`, `libssh-4` `0.10.6-0+deb12u3`, `libbrotli1` `1.0.9-2+deb12u1`, `ca-certificates` `20250419~deb12u2`, `postgresql-client-15` `15.20`, `nodejs` `22.23.5`.
    * **Docker:** Configurado em **Socket Activation** (`docker.socket`), liberando ~150 MB de RAM quando inativo.
    * **Serviços Desativados:** `ModemManager` e `fwupd`.
 4. **Gaia Guardian AI (Etapa 2):**
@@ -35,9 +36,14 @@ Este repositório centraliza a evolução autônoma, blindagem de segurança, ot
    * **Consultor Gemini 3.8 Flash (`gaia-gemini-advisor`):** Análise sob demanda ou por gatilho com consumo zero de RAM residente.
    * **Interface Gráfica (`gaia-guardian-ui`):** Dashboard PyQt5 sob demanda para visualização de métricas e tomada de decisões.
 5. **Limpeza e Reivindicação de Disco (Etapa 5):**
-   * Remoção de imagens antigas de máquinas virtuais e instaladores não mais úteis, liberando mais de 10 GB de armazenamento.
+   * Remoção de imagens antigas de máquinas virtuais, `raspi-firmware` e instaladores não mais úteis, liberando mais de 10 GB de armazenamento.
 6. **Atalho de Produtividade `agy --yolo`:**
    * Wrapper universal em `/usr/local/bin/agy` e funções de shell que traduzem `--yolo` para `--dangerously-skip-permissions` no Antigravity CLI.
+7. **Ambiente Gráfico KDE Plasma `5.27.5` (Wayland):**
+   * **Sessão & Compositor:** Sessão ativa em **Wayland** (`kwin-wayland`, `plasma-workspace-wayland`, `sddm` `0.19.0-5`) com fallback X11 (`kwin-x11`) e tema **Breeze Dark** (`org.kde.breezedark.desktop`).
+   * **Aplicativos & Recursos:** `dolphin`, `konsole`, `kate`, `kde-spectacle`, `plasma-discover`, `plasma-systemmonitor`, `plasma-nm`, `plasma-pa`, `plasma-vault`, `plasma-disks`, `plasma-thunderbolt`, `plasma-browser-integration`, `powerdevil`, `bluedevil`, `kscreen`, `xdg-desktop-portal-kde` e widget customizado `org.kde.plasma.catwalk`.
+8. **Integração Meta Muse Wonder 1.0 (Vertex AI Serverless & VS Code):**
+   * Bridge local resiliente (`integrations/muse-wonder/gaia-muse-vertex-bridge.py` v2) com serialização anti-429, refresh automático 401 e adaptador OpenAI para Continue no VS Code (`Ctrl+L` / `Ctrl+I`) e CLI `muse-wonder` (ativação sob demanda).
 
 ---
 
