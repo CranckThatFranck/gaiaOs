@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# Gaia OS 1.0 - Armador do Crash Kernel BSOD (kexec -p)
+# Executado uma unica vez no boot (0 KB RAM residente apos armar).
+# ==============================================================================
+set -euo pipefail
+
+KVER="$(uname -r)"
+KERNEL_IMG="/boot/vmlinuz-${KVER}"
+BSOD_INITRD="/boot/gaia-bsod-initrd-${KVER}.img"
+[ -f "$BSOD_INITRD" ] || BSOD_INITRD="/boot/gaia-bsod-initrd.img"
+
+CRASH_SIZE="$(cat /sys/kernel/kexec_crash_size 2>/dev/null || echo 0)"
+if [ "$CRASH_SIZE" -le 0 ]; then
+    echo "[gaia-kdump-arm] AVISO: crashkernel= nao esta reservado neste boot (kexec_crash_size=0)."
+    echo "[gaia-kdump-arm] O fallback kernel.panic=30 continua ativo; reinicie para ativar o kexec BSOD."
+    exit 0
+fi
+
+if [ ! -f "$KERNEL_IMG" ] || [ ! -f "$BSOD_INITRD" ]; then
+    echo "[gaia-kdump-arm] Construindo initrd BSOD ausente para $KVER..."
+    /usr/local/bin/gaia-bsod-mkinitrd "$KVER"
+    BSOD_INITRD="/boot/gaia-bsod-initrd-${KVER}.img"
+fi
+
+# Descarregar eventual crash kernel anterior e carregar o atual
+/sbin/kexec -p -u 2>/dev/null || true
+
+APPEND_ARGS="1 irqpoll nr_cpus=1 reset_devices i915.modeset=1 intel_iommu=off acpi_backlight=native panic=30 console=tty1 loglevel=0"
+
+/sbin/kexec -p "$KERNEL_IMG" \
+    --initrd="$BSOD_INITRD" \
+    --append="$APPEND_ARGS"
+
+LOADED="$(cat /sys/kernel/kexec_crash_loaded 2>/dev/null || echo 0)"
+if [ "$LOADED" = "1" ]; then
+    echo "[gaia-kdump-arm] Gaia BSOD Crash Kernel ARMADO com sucesso! (Kernel: $KVER, Memoria reservada: $((CRASH_SIZE / 1024 / 1024)) MB)"
+else
+    echo "[gaia-kdump-arm] ERRO: Falha ao confirmar kexec_crash_loaded=1" >&2
+    exit 1
+fi

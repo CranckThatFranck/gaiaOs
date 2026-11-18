@@ -1,0 +1,97 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# Gaia OS 1.0 - Aplicador Idempotente do Subsistema de Estabilidade, BSOD e Fallback
+# Instala:
+#   1. /etc/sysctl.d/99-gaia-stability.conf (panic=30, panic_on_oops=1, sysrq=1)
+#   2. /usr/local/bin/gaia-bsod-screen, gaia-bsod-mkinitrd, gaia-kdump-arm, gaia-boot-health
+#   3. /etc/kernel/postinst.d/zz-gaia-bsod (reconstroi BSOD initrd em novos kernels)
+#   4. /etc/grub.d/02_gaia_fallback + /etc/default/grub (crashkernel=192M, panic=30, oops=panic)
+#   5. Systemd units: gaia-kdump-bsod, gaia-boot-health, gaia-emergency-bsod
+#   6. Reconstroi imagens /boot/gaia-bsod-initrd-<kver>.img e valida grub.cfg
+# ==============================================================================
+set -euo pipefail
+
+GAIA_ROOT="/home/francisco/Documentos/Projetos/GaiaOS"
+
+echo "=================================================================="
+echo " [Gaia OS Recovery Core] Instalando BSOD, Crash-Capture & Fallback"
+echo "=================================================================="
+
+# 1. Sysctl de estabilidade & escalacao de Oops para Panic (30s auto-reboot)
+echo "[1/6] Aplicando parametros de kernel/sysctl de estabilidade..."
+sudo cp "$GAIA_ROOT/recovery/99-gaia-stability.conf" /etc/sysctl.d/99-gaia-stability.conf
+sudo chmod 644 /etc/sysctl.d/99-gaia-stability.conf
+# Remove antigo 99-stability.conf nao rastreado se existir para evitar duplicidade
+if [ -f /etc/sysctl.d/99-stability.conf ]; then
+    sudo rm -f /etc/sysctl.d/99-stability.conf
+fi
+sudo sysctl --system >/dev/null
+
+# Garantir que o servico kexec padrao do Debian NAO intercepte reboots normais
+if [ -f /etc/default/kexec ]; then
+    sudo sed -i 's/^LOAD_KEXEC=.*/LOAD_KEXEC=false/' /etc/default/kexec
+fi
+sudo systemctl disable kexec-load.service >/dev/null 2>&1 || true
+
+# 2. Scripts executaveis do Gaia BSOD e Boot Health
+echo "[2/6] Instalando utilitarios Gaia BSOD em /usr/local/bin..."
+for f in gaia-bsod-screen gaia-bsod-mkinitrd gaia-kdump-arm gaia-boot-health; do
+    sudo cp "$GAIA_ROOT/recovery/$f" "/usr/local/bin/$f"
+    sudo chmod 755 "/usr/local/bin/$f"
+done
+
+sudo mkdir -p /var/log/gaia-crash /etc/gaiaos
+sudo chmod 755 /var/log/gaia-crash /etc/gaiaos
+
+# Hook de pos-instalacao de kernel para futuros upgrades
+sudo mkdir -p /etc/kernel/postinst.d
+sudo cp "$GAIA_ROOT/recovery/zz-gaia-bsod" /etc/kernel/postinst.d/zz-gaia-bsod
+sudo chmod 755 /etc/kernel/postinst.d/zz-gaia-bsod
+
+# 3. Construir initramfs BSOD ultraleve para todos os kernels 6.1.0-* instalados
+echo "[3/6] Construindo imagens initramfs BSOD (kexec)..."
+for kimg in /boot/vmlinuz-*; do
+    [ -f "$kimg" ] || continue
+    kver="$(basename "$kimg" | sed 's/^vmlinuz-//')"
+    if [ -d "/lib/modules/$kver" ]; then
+        sudo /usr/local/bin/gaia-bsod-mkinitrd "$kver"
+    fi
+done
+
+# 4. Configurar GRUB (kernel mais novo como padrao + auto-fallback + crashkernel=192M + panic=30)
+echo "[4/6] Configurando GRUB2 (crashkernel=192M, oops=panic, panic=30, auto-fallback)..."
+sudo cp "$GAIA_ROOT/recovery/02_gaia_fallback" /etc/grub.d/02_gaia_fallback
+sudo chmod 755 /etc/grub.d/02_gaia_fallback
+
+sudo tee /etc/default/grub >/dev/null <<'GRUBEOF'
+# Gaia OS 1.0 (Westmere Edition) - GRUB2 com Auto-Fallback e Crash-Capture BSOD
+GRUB_DEFAULT=0
+GRUB_TIMEOUT=5
+GRUB_DISTRIBUTOR="Gaia OS"
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash intel_iommu=off acpi_backlight=native crashkernel=192M panic=30 oops=panic softlockup_panic=1 nmi_watchdog=1"
+GRUB_CMDLINE_LINUX=""
+GRUB_DISABLE_OS_PROBER=false
+GRUBEOF
+
+sudo update-grub
+sudo grub-script-check /boot/grub/grub.cfg
+echo "  -> grub-script-check: OK!"
+
+# 5. Instalar e habilitar unidades Systemd
+echo "[5/6] Instalando e habilitando servicos systemd (BSOD, kdump-arm, boot-health)..."
+for u in gaia-kdump-bsod.service gaia-boot-health.service gaia-emergency-bsod.service; do
+    sudo cp "$GAIA_ROOT/systemd/$u" "/etc/systemd/system/$u"
+    sudo chmod 644 "/etc/systemd/system/$u"
+done
+
+sudo systemctl daemon-reload
+sudo systemctl enable gaia-kdump-bsod.service gaia-boot-health.service gaia-emergency-bsod.service >/dev/null 2>&1 || true
+
+# 6. Executar gaia-boot-health agora para popular fallback-kernel.conf e grubenv
+echo "[6/6] Sincronizando saude de boot e kernel de fallback no grubenv..."
+sudo /usr/local/bin/gaia-boot-health
+sudo systemctl start gaia-kdump-bsod.service || true
+
+echo "=================================================================="
+echo " [Gaia OS Recovery Core] Instalacao concluida com sucesso!"
+echo "=================================================================="

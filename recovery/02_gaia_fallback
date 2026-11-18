@@ -1,0 +1,24 @@
+#!/bin/sh
+# ==============================================================================
+# Gaia OS 1.0 - GRUB2 Automatic Kernel Fallback Guard (/etc/grub.d/02_gaia_fallback)
+# Se o boot anterior do kernel padrao falhou antes de completar a inicializacao
+# (gaia_boot_ok=0), muda automaticamente o boot atual para o kernel estavel de
+# fallback registrado em gaia_fallback_entry, evitando boot loops.
+# ==============================================================================
+cat <<'EOF'
+### Gaia OS Automatic Kernel Fallback Guard ###
+if [ -n "${have_grubenv}" ]; then
+  if [ -z "${boot_once}" ]; then
+    if [ "${gaia_boot_ok}" = "0" -a -n "${gaia_fallback_entry}" ]; then
+      set default="${gaia_fallback_entry}"
+      set gaia_boot_ok="1"
+      set gaia_fallback_triggered="1"
+      save_env gaia_boot_ok gaia_fallback_triggered
+      set timeout=10
+    elif [ "${default}" = "0" ]; then
+      set gaia_boot_ok="0"
+      save_env gaia_boot_ok
+    fi
+  fi
+fi
+EOF

@@ -1,0 +1,20 @@
+[Unit]
+Description=Gaia OS Emergency Blue Screen of Death (30s Auto-Reboot Fallback)
+DefaultDependencies=no
+After=systemd-vconsole-setup.service
+Conflicts=shutdown.target
+Before=emergency.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/gaia-bsod-screen --emergency
+StandardInput=tty-force
+StandardOutput=tty
+StandardError=tty
+TTYPath=/dev/tty1
+TTYReset=yes
+TTYVHangup=yes
+TTYVTDisallocate=yes
+
+[Install]
+WantedBy=emergency.target

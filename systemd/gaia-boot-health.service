@@ -1,0 +1,12 @@
+[Unit]
+Description=Gaia OS Boot Health Verification, GRUB Auto-Fallback Sync & Crash Notifier
+After=local-fs.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/bin/gaia-boot-health
+
+[Install]
+WantedBy=multi-user.target

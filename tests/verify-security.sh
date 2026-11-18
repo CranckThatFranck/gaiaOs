@@ -8,6 +8,7 @@
 # - Prevenção PHP2Shell (CVE-2026-109618 / CVE-2026-109619)
 # ==============================================================================
 set -euo pipefail
+export PATH="$PATH:/usr/sbin:/sbin"
 
 PASS=0
 FAIL=0
@@ -119,6 +120,23 @@ check "Daemon C 'gaia-guardian' ativo, lendo temperatura coretemp e consumindo <
 
 check "Consultor Gemini 3.8 Flash e Interface Gráfica (gaia-guardian-ui) instalados" \
     "[ -x /usr/local/bin/gaia-gemini-advisor ] && [ -x /usr/local/bin/gaia-guardian-ui ] && [ -f /var/log/gaia-guardian/gemini-insights.log ]"
+
+echo ""
+echo "--- 6. Testes de Estabilidade de Kernel, Gaia BSOD & Auto-Fallback GRUB ---"
+check "Kernel defeituoso 6.1.0-55-amd64 (Debian Bug #1154101 ext4) removido e 6.1.0-56-amd64 instalado" \
+    "[ ! -f /boot/vmlinuz-6.1.0-55-amd64 ] && [ -f /boot/vmlinuz-6.1.0-56-amd64 ]"
+
+check "Parâmetros de Kernel Panic/Oops configurados (panic=30, panic_on_oops=1, softlockup_panic=1, sysrq=1)" \
+    "[ \"\$(sysctl -n kernel.panic)\" = \"30\" ] && [ \"\$(sysctl -n kernel.panic_on_oops)\" = \"1\" ] && [ \"\$(sysctl -n kernel.softlockup_panic)\" = \"1\" ] && [ \"\$(sysctl -n kernel.sysrq)\" = \"1\" ]"
+
+check "Initramfs BSOD (kexec) gerado para kernel 6.1.0-56-amd64 e kexec normal desativado" \
+    "[ -f /boot/gaia-bsod-initrd-6.1.0-56-amd64.img ] && [ -x /usr/local/bin/gaia-bsod-screen ] && grep -q '^LOAD_KEXEC=false' /etc/default/kexec"
+
+check "GRUB configurado com crashkernel=192M, auto-fallback (02_gaia_fallback) e sintaxe válida" \
+    "grep -q 'crashkernel=192M' /etc/default/grub && [ -x /etc/grub.d/02_gaia_fallback ] && sudo grub-script-check /boot/grub/grub.cfg"
+
+check "Serviços de recuperação (gaia-kdump-bsod, gaia-boot-health, gaia-emergency-bsod) habilitados e fallback definido" \
+    "systemctl is-enabled --quiet gaia-kdump-bsod.service && systemctl is-enabled --quiet gaia-boot-health.service && systemctl is-enabled --quiet gaia-emergency-bsod.service && [ -f /etc/gaiaos/fallback-kernel.conf ]"
 
 echo ""
 echo "=================================================================="

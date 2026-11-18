@@ -1,0 +1,286 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# Gaia OS 1.0 - Construtor da Imagem Initramfs de Crash BSOD (kexec)
+# Gera /boot/gaia-bsod-initrd-<kver>.img ultraleve (~15-25 MB) para exibir
+# a Tela Azul da Morte em tempo real ao ocorrer Kernel Panic / Oops, capturar
+# o vmcore dmesg, gravar log forense, armar fallback no GRUB e reiniciar em 30s.
+# ==============================================================================
+set -euo pipefail
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+KVER="${1:-$(uname -r)}"
+MOD_SRC="/lib/modules/$KVER"
+OUT_IMG="/boot/gaia-bsod-initrd-${KVER}.img"
+ROOT_UUID="$(findmnt -no UUID / 2>/dev/null || echo 'db640fa4-24c1-40de-86c7-06b6e2715a5a')"
+
+if [ ! -d "$MOD_SRC" ]; then
+    echo "[gaia-bsod-mkinitrd] ERRO: Diretorio de modulos nao encontrado: $MOD_SRC" >&2
+    exit 1
+fi
+
+if ! command -v busybox >/dev/null 2>&1; then
+    echo "[gaia-bsod-mkinitrd] ERRO: busybox-static nao instalado." >&2
+    exit 1
+fi
+
+WORKDIR="$(mktemp -d /tmp/gaia-bsod-initrd.XXXXXX)"
+trap 'rm -rf "$WORKDIR"' EXIT
+
+echo "[gaia-bsod-mkinitrd] Construindo initramfs BSOD para Kernel $KVER..."
+
+mkdir -p "$WORKDIR"/{bin,sbin,etc,proc,sys,dev,tmp,run,mnt/root,lib,lib64,usr/bin,usr/sbin,usr/lib}
+mkdir -p "$WORKDIR/lib/modules/$KVER"
+
+# 1. Copiar busybox-static e criar applets essenciais
+BB_BIN="$(command -v busybox)"
+cp -L "$BB_BIN" "$WORKDIR/bin/busybox"
+chmod 755 "$WORKDIR/bin/busybox"
+for app in sh ash mount umount mkdir sleep reboot poweroff sync clear grep egrep tail head sed awk dmesg insmod modprobe stty dd cat cut tr date uname ls cp mv rm ln readlink printf seq blkid mdev findmnt chvt switch_root fsck; do
+    ln -sf /bin/busybox "$WORKDIR/bin/$app" 2>/dev/null || true
+done
+ln -sf /bin/busybox "$WORKDIR/sbin/modprobe"
+ln -sf /bin/busybox "$WORKDIR/sbin/insmod"
+ln -sf /bin/busybox "$WORKDIR/sbin/mdev"
+ln -sf /bin/busybox "$WORKDIR/sbin/reboot"
+
+# Funcao auxiliar para copiar binario dinamico + bibliotecas compartilhadas
+copy_bin_with_libs() {
+    local bin_path="$1"
+    local dest_dir="${2:-/usr/bin}"
+    [ -x "$bin_path" ] || return 0
+    mkdir -p "$WORKDIR$dest_dir"
+    cp -L "$bin_path" "$WORKDIR$dest_dir/$(basename "$bin_path")"
+    chmod 755 "$WORKDIR$dest_dir/$(basename "$bin_path")"
+    ldd "$bin_path" 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i ~ /^\//) print $i}' | while IFS= read -r lib; do
+        [ -f "$lib" ] || continue
+        local ldir
+        ldir="$(dirname "$lib")"
+        mkdir -p "$WORKDIR$ldir"
+        cp -nL "$lib" "$WORKDIR$lib" 2>/dev/null || true
+    done
+}
+
+# 2. Copiar makedumpfile (para extrair dmesg do /proc/vmcore) e grub-editenv (fallback GRUB)
+copy_bin_with_libs "$(command -v makedumpfile 2>/dev/null || true)" "/usr/bin"
+copy_bin_with_libs "$(command -v grub-editenv 2>/dev/null || true)" "/usr/bin"
+copy_bin_with_libs "$(command -v e2fsck 2>/dev/null || true)" "/sbin"
+
+# 3. Copiar modulos minimos necessarios (GPU Intel i915, SATA AHCI, ext4, teclado)
+copy_module_tree() {
+    local mod="$1"
+    local paths
+    paths="$(modprobe -S "$KVER" --show-depends "$mod" 2>/dev/null | awk '/^insmod / {print $2}' || true)"
+    for p in $paths; do
+        [ -f "$p" ] || continue
+        local rel="${p#/}"
+        mkdir -p "$WORKDIR/$(dirname "$rel")"
+        cp -n "$p" "$WORKDIR/$rel" 2>/dev/null || true
+    done
+}
+
+for mod in i915 drm drm_kms_helper fbcon ahci libahci sd_mod ext4 crc32c-intel crc32c_generic i8042 atkbd usbhid hid-generic ehci-pci ehci-hcd xhci-pci xhci-hcd; do
+    copy_module_tree "$mod"
+done
+
+# Copiar metadados de modulos para modprobe funcionar dentro do crash kernel
+for f in modules.order modules.builtin modules.builtin.modinfo modules.dep modules.dep.bin modules.alias modules.alias.bin modules.softdep modules.symbols modules.symbols.bin; do
+    [ -f "$MOD_SRC/$f" ] && cp "$MOD_SRC/$f" "$WORKDIR/lib/modules/$KVER/$f"
+done
+
+# 4. Criar /init (Tela Azul da Morte Real-Time no kexec crash kernel)
+cat <<INITEOF > "$WORKDIR/init"
+#!/bin/sh
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+
+mount -t proc proc /proc 2>/dev/null
+mount -t sysfs sysfs /sys 2>/dev/null
+mount -t devtmpfs devtmpfs /dev 2>/dev/null || true
+mount -t tmpfs tmpfs /tmp 2>/dev/null
+mount -t tmpfs tmpfs /run 2>/dev/null
+
+# Silenciar mensagens ruidosas do kernel no console durante a renderizacao da BSOD
+echo 0 > /proc/sys/kernel/printk 2>/dev/null || true
+
+mdev -s 2>/dev/null || true
+
+# Carregar video Intel KMS (reseta GPU congelada do Wayland para framebuffer 170x48), teclado e disco SATA/ext4
+for m in i915 i8042 atkbd ehci-pci usbhid hid-generic ahci sd_mod crc32c-intel crc32c_generic ext4; do
+    modprobe "\$m" 2>/dev/null || true
+done
+sleep 1
+mdev -s 2>/dev/null || true
+
+# Redirecionar I/O para o terminal fisico principal (tty1)
+exec 0</dev/tty1 1>/dev/tty1 2>/dev/tty1
+chvt 1 2>/dev/null || true
+
+TS="\$(date '+%Y%m%d-%H%M%S' 2>/dev/null || echo 'crash')"
+HUMAN_TS="\$(date '+%Y-%m-%d %H:%M:%S UTC' 2>/dev/null || echo 'N/A')"
+CRASH_KVER="\$(uname -r 2>/dev/null || echo 'desconhecido')"
+DUMP_TXT="/tmp/vmcore-dmesg.txt"
+TRACE_TXT="/tmp/crash-trace.txt"
+STOP_CODE="KERNEL_PANIC_OR_OOPS_DETECTED"
+SAVED_LOG="Nao foi possivel montar disco (somente leitura na tela)"
+FALLBACK_MSG="Fallback padrao do GRUB ativo (gaia_boot_ok=0)"
+
+# Extrair dmesg do kernel morto direto da memoria (/proc/vmcore)
+if [ -r /proc/vmcore ] && [ -x /usr/bin/makedumpfile ]; then
+    /usr/bin/makedumpfile --dump-dmesg /proc/vmcore "\$DUMP_TXT" >/dev/null 2>&1 || true
+fi
+
+if [ -s "\$DUMP_TXT" ]; then
+    # Detectar versao real do kernel que travou
+    FOUND_KVER="\$(grep -m1 'Linux version ' "\$DUMP_TXT" | awk '{print \$3}' || true)"
+    [ -n "\$FOUND_KVER" ] && CRASH_KVER="\$FOUND_KVER"
+
+    # Detectar linha exata do BUG/Oops/Panic
+    FOUND_STOP="\$(grep -E 'BUG:|Kernel panic|Oops:|general protection fault|soft lockup|hard LOCKUP|Machine Check' "\$DUMP_TXT" | tail -n 1 | sed 's/^\[[ 0-9.]*\] //' | cut -c1-84)"
+    [ -n "\$FOUND_STOP" ] && STOP_CODE="\$FOUND_STOP"
+
+    # Extrair RIP e Call Trace do kernel crashado
+    grep -E 'BUG:|Kernel panic|Oops:|general protection fault|RIP:|Code:|Call Trace:| <TASK>| \? |ext4|i915|ath9k|nvme|ahci|zram|nf_|tcp_' "\$DUMP_TXT" \
+        | sed 's/^\[[ 0-9.]*\] //' | tail -n 16 > "\$TRACE_TXT" 2>/dev/null || true
+    if [ ! -s "\$TRACE_TXT" ]; then
+        tail -n 16 "\$DUMP_TXT" | sed 's/^\[[ 0-9.]*\] //' > "\$TRACE_TXT" 2>/dev/null || true
+    fi
+else
+    dmesg | tail -n 16 > "\$TRACE_TXT" 2>/dev/null || echo "Sem vmcore disponivel." > "\$TRACE_TXT"
+fi
+
+# Tentar montar particao raiz (ext4) rapidamente para gravar log forense e armar GRUB fallback
+ROOT_UUID="${ROOT_UUID}"
+ROOT_DEV="\$(blkid -U "\$ROOT_UUID" 2>/dev/null || echo '/dev/sda4')"
+if [ -b "\$ROOT_DEV" ]; then
+    # Reproduzir journal ext4 se necessario com e2fsck rapido apenas se seguro, ou montar direto
+    if mount -t ext4 -o rw,noatime "\$ROOT_DEV" /mnt/root 2>/dev/null; then
+        mkdir -p /mnt/root/var/log/gaia-crash 2>/dev/null || true
+        OUT_LOG="/mnt/root/var/log/gaia-crash/crash-\${TS}.log"
+        {
+            echo "=================================================================="
+            echo " GAIA OS 1.0 - RELATORIO FORENSE DE KERNEL PANIC / OOPS (BSOD)"
+            echo "=================================================================="
+            echo "Data/Hora (UTC): \$HUMAN_TS"
+            echo "Kernel Falhado : \$CRASH_KVER"
+            echo "Codigo Parada  : \$STOP_CODE"
+            echo "=================================================================="
+            echo ""
+            if [ -s "\$DUMP_TXT" ]; then
+                tail -n 250 "\$DUMP_TXT"
+            else
+                cat "\$TRACE_TXT"
+            fi
+        } > "\$OUT_LOG" 2>/dev/null && {
+            ln -sf "crash-\${TS}.log" /mnt/root/var/log/gaia-crash/latest.log 2>/dev/null || true
+            SAVED_LOG="/var/log/gaia-crash/crash-\${TS}.log"
+        }
+
+        # Armar fallback automatico no GRUB para o kernel estavel anterior
+        if [ -f /mnt/root/etc/gaiaos/fallback-kernel.conf ] && [ -x /usr/bin/grub-editenv ] && [ -f /mnt/root/boot/grub/grubenv ]; then
+            . /mnt/root/etc/gaiaos/fallback-kernel.conf 2>/dev/null || true
+            if [ -n "\${FALLBACK_GRUB_ENTRY:-}" ]; then
+                # So ativa fallback se o kernel que travou NAO for ja o proprio fallback
+                if [ "\$CRASH_KVER" != "\${FALLBACK_KERNEL_VER:-}" ]; then
+                    /usr/bin/grub-editenv /mnt/root/boot/grub/grubenv set \
+                        next_entry="\$FALLBACK_GRUB_ENTRY" \
+                        gaia_fallback_triggered="1" \
+                        gaia_last_crash="crash-\${TS}.log" 2>/dev/null && \
+                        FALLBACK_MSG="GRUB armado -> proximo boot iniciara no kernel estavel (\${FALLBACK_KERNEL_VER:-fallback})"
+                else
+                    /usr/bin/grub-editenv /mnt/root/boot/grub/grubenv set \
+                        gaia_last_crash="crash-\${TS}.log" 2>/dev/null || true
+                    FALLBACK_MSG="Kernel de fallback tambem registrou falha; log salvo para analise."
+                fi
+            fi
+        fi
+
+        sync
+        umount /mnt/root 2>/dev/null || true
+    fi
+fi
+
+# Cores ANSI: Fundo azul profundo (44), branco brilhante (97), amarelo (93), ciano (96)
+BLUE_BG="\033[44;97;1m"
+YELLOW_FG="\033[44;93;1m"
+CYAN_FG="\033[44;96;1m"
+RESET="\033[0m"
+
+render_screen() {
+    rem="\$1"
+    paused="\$2"
+    printf "\${BLUE_BG}\033[2J\033[H\033[?25l"
+    printf "\n"
+    printf "   =============================================================================\n"
+    printf "     :(   GAIA OS 1.0 — TELA AZUL DA MORTE (RECUPERACAO DE KERNEL PANIC)\n"
+    printf "   =============================================================================\n\n"
+    printf "   O Kernel Linux encontrou um erro fatal e o Gaia OS interceptou a falha\n"
+    printf "   para capturar o diagnostico e evitar corrupcao do sistema de arquivos.\n\n"
+    printf "   \${YELLOW_FG}CODIGO DE PARADA:\${BLUE_BG} %s\n" "\$STOP_CODE"
+    printf "   \${CYAN_FG}KERNEL FALHADO  :\${BLUE_BG} %s\n" "\$CRASH_KVER"
+    printf "   \${CYAN_FG}DATA / HORA     :\${BLUE_BG} %s\n" "\$HUMAN_TS"
+    printf "   \${CYAN_FG}LOG FORENSE     :\${BLUE_BG} %s\n" "\$SAVED_LOG"
+    printf "   \${CYAN_FG}AUTO-FALLBACK   :\${BLUE_BG} %s\n\n" "\$FALLBACK_MSG"
+    printf "   --- REGISTRO DO KERNEL / STACK TRACE (RIP & CALL TRACE) ---------------------\n"
+    while IFS= read -r line; do
+        printf "   %.78s\n" "\$line"
+    done < "\$TRACE_TXT"
+    printf "   -----------------------------------------------------------------------------\n\n"
+    if [ "\$paused" -eq 1 ]; then
+        printf "   \${YELLOW_FG}[PAUSADO]\${BLUE_BG} Leitura pausada. [R] Reiniciar agora | [P] Retomar | [S] Shell\n"
+    else
+        printf "   \${YELLOW_FG}Reiniciando automaticamente em %2ds...\${BLUE_BG}   [R] Reiniciar | [P] Pausar | [S] Shell\n" "\$rem"
+    fi
+}
+
+PAUSED=0
+REM=30
+
+while true; do
+    render_screen "\$REM" "\$PAUSED"
+    KEY=""
+    if [ "\$PAUSED" -eq 1 ]; then
+        read -r -n 1 KEY 2>/dev/null || sleep 1
+    else
+        read -r -n 1 -t 1 KEY 2>/dev/null || true
+    fi
+
+    case "\$KEY" in
+        p|P)
+            if [ "\$PAUSED" -eq 0 ]; then PAUSED=1; else PAUSED=0; fi
+            continue
+            ;;
+        r|R)
+            printf "\n   Reiniciando o sistema agora...\n"
+            sync
+            reboot -f
+            ;;
+        s|S)
+            printf "\${RESET}\033[?25h"
+            clear
+            echo "[Gaia BSOD] Shell de emergencia (digite 'reboot -f' para reiniciar)."
+            /bin/sh
+            sync
+            reboot -f
+            ;;
+    esac
+
+    if [ "\$PAUSED" -eq 0 ]; then
+        REM=\$((REM - 1))
+        if [ "\$REM" -le 0 ]; then
+            printf "\n   Contagem concluida. Reiniciando automaticamente no kernel seguro...\n"
+            sync
+            reboot -f
+        fi
+    fi
+done
+INITEOF
+chmod 755 "$WORKDIR/init"
+
+# Empacotar initramfs com gzip rapido (-6) para boot instantaneo no crash kernel
+(
+    cd "$WORKDIR"
+    find . -print0 | cpio --null -ov --format=newc 2>/dev/null | gzip -6 > "$OUT_IMG"
+)
+chmod 600 "$OUT_IMG"
+ln -sf "$(basename "$OUT_IMG")" /boot/gaia-bsod-initrd.img
+
+echo "[gaia-bsod-mkinitrd] Imagem criada com sucesso: $OUT_IMG ($(du -h "$OUT_IMG" | cut -f1))"

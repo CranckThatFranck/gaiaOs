@@ -1,0 +1,13 @@
+[Unit]
+Description=Gaia OS BSOD Crash Kernel Arming (kexec -p zero-RAM-resident)
+After=local-fs.target
+ConditionPathExists=/sys/kernel/kexec_crash_size
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/bin/gaia-kdump-arm
+ExecStop=/sbin/kexec -p -u
+
+[Install]
+WantedBy=multi-user.target

@@ -202,7 +202,7 @@ static void write_status_json(const sys_metrics_t *m) {
     rename(STATUS_TMP, STATUS_JSON);
 }
 
-static void perform_gentle_memory_reclaim(const char *reason) {
+static void perform_gentle_memory_reclaim(const char *reason, int aggressive) {
     sys_metrics_t before, after;
     read_metrics(&before);
     sync();
@@ -213,10 +213,14 @@ static void perform_gentle_memory_reclaim(const char *reason) {
         fclose(fp);
     }
 
-    fp = fopen("/proc/sys/vm/compact_memory", "w");
-    if (fp) {
-        fputs("1\n", fp);
-        fclose(fp);
+    /* Compact memory only on genuine emergency or manual trigger to avoid
+     * Westmere CPU stalls and excessive ext4 buddy/page-cache churn. */
+    if (aggressive) {
+        fp = fopen("/proc/sys/vm/compact_memory", "w");
+        if (fp) {
+            fputs("1\n", fp);
+            fclose(fp);
+        }
     }
 
     usleep(200000);
@@ -353,7 +357,7 @@ int main(void) {
 
         if (trigger_reclaim_now) {
             trigger_reclaim_now = 0;
-            perform_gentle_memory_reclaim("Acionamento manual via interface/CLI");
+            perform_gentle_memory_reclaim("Acionamento manual via interface/CLI", 1);
             read_metrics(&m);
             write_status_json(&m);
         }
@@ -365,9 +369,13 @@ int main(void) {
             last_gemini_consult = now;
         }
 
-        /* Automatic proactive memory optimization when RAM > 80% or PSI some >= 12.0 */
-        if ((used_pct >= 80.0 || m.psi_some_avg10 >= 12.0) && (now - last_auto_reclaim >= 120)) {
-            perform_gentle_memory_reclaim("Pressao de memoria detectada (>80% ou PSI stall)");
+        /* Automatic proactive memory optimization ONLY under genuine pressure:
+         * Respect MGLRU working-set protection when PSI is 0 and RAM available >= 512 MB. */
+        int real_mem_pressure = (used_pct >= 90.0 && m.mem_avail_kb < 512 * 1024)
+                                || (m.psi_some_avg10 >= 15.0)
+                                || (m.psi_full_avg10 >= 5.0);
+        if (real_mem_pressure && (now - last_auto_reclaim >= 180)) {
+            perform_gentle_memory_reclaim("Pressao real de memoria (RAM>=90% / <512MB ou PSI stall)", 0);
             last_auto_reclaim = now;
 
             if (now - last_gemini_consult >= 600) {
@@ -387,7 +395,7 @@ int main(void) {
 
         /* Emergency desktop freeze protection if available RAM drops below 180 MB */
         if (m.mem_avail_kb > 0 && m.mem_avail_kb < 180 * 1024) {
-            perform_gentle_memory_reclaim("Emergencia RAM < 180 MB");
+            perform_gentle_memory_reclaim("Emergencia RAM < 180 MB", 1);
             read_metrics(&m);
             if (m.mem_avail_kb < 160 * 1024) {
                 emergency_protect_desktop();

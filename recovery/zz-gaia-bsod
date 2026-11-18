@@ -1,0 +1,14 @@
+#!/bin/sh
+# ==============================================================================
+# Gaia OS 1.0 - Kernel Postinst Hook (/etc/kernel/postinst.d/zz-gaia-bsod)
+# Reconstroi automaticamente /boot/gaia-bsod-initrd-<kver>.img quando um novo
+# kernel Linux e instalado via apt/dpkg.
+# ==============================================================================
+set -e
+
+KVER="$1"
+[ -n "$KVER" ] || exit 0
+[ -x /usr/local/bin/gaia-bsod-mkinitrd ] || exit 0
+
+/usr/local/bin/gaia-bsod-mkinitrd "$KVER" || true
+exit 0

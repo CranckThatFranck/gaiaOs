@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# Gaia OS 1.0 - Servico de Saude de Boot, Auto-Fallback GRUB & Alerta de Crash
+# 1. Marca o boot atual como saudavel (gaia_boot_ok=1) no grubenv
+# 2. Atualiza /etc/gaiaos/fallback-kernel.conf com o kernel estavel anterior
+# 3. Detecta se houve crash/BSOD ou fallback automatico e notifica via Telegram
+# ==============================================================================
+set -euo pipefail
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+GRUBENV="/boot/grub/grubenv"
+FALLBACK_CONF="/etc/gaiaos/fallback-kernel.conf"
+CRASH_DIR="/var/log/gaia-crash"
+CURRENT_KVER="$(uname -r)"
+ROOT_UUID="$(findmnt -no UUID / 2>/dev/null || echo 'db640fa4-24c1-40de-86c7-06b6e2715a5a')"
+
+mkdir -p /etc/gaiaos "$CRASH_DIR"
+
+# 1. Descobrir automaticamente o melhor kernel de fallback (segundo mais recente instalado)
+#    Ignora versoes conhecidamente defeituosas (ex: 6.1.0-55-amd64 - Debian Bug #1154101).
+KERNELS=()
+while IFS= read -r k; do
+    [ -n "$k" ] || continue
+    [ "$k" = "6.1.0-55-amd64" ] && continue
+    KERNELS+=("$k")
+done < <(ls -1 /boot/vmlinuz-* 2>/dev/null | sed 's|/boot/vmlinuz-||' | sort -V -r)
+
+PRIMARY_KVER="${KERNELS[0]:-$CURRENT_KVER}"
+FALLBACK_KVER="${KERNELS[1]:-$PRIMARY_KVER}"
+FALLBACK_ENTRY="gnulinux-advanced-${ROOT_UUID}>gnulinux-${FALLBACK_KVER}-advanced-${ROOT_UUID}"
+
+cat <<EOF > "$FALLBACK_CONF"
+# Gerado automaticamente por gaia-boot-health ($(date '+%Y-%m-%d %H:%M:%S'))
+PRIMARY_KERNEL_VER="${PRIMARY_KVER}"
+FALLBACK_KERNEL_VER="${FALLBACK_KVER}"
+FALLBACK_GRUB_ENTRY="${FALLBACK_ENTRY}"
+EOF
+chmod 644 "$FALLBACK_CONF"
+
+# 2. Ler flags do grubenv antes de limpar
+FALLBACK_TRIGGERED=""
+LAST_CRASH=""
+if [ -f "$GRUBENV" ] && command -v grub-editenv >/dev/null 2>&1; then
+    FALLBACK_TRIGGERED="$(grub-editenv "$GRUBENV" list 2>/dev/null | awk -F= '/^gaia_fallback_triggered=/ {print $2}' || true)"
+    LAST_CRASH="$(grub-editenv "$GRUBENV" list 2>/dev/null | awk -F= '/^gaia_last_crash=/ {print $2}' || true)"
+
+    # Marcar boot atual como saudavel e atualizar fallback entry no grubenv
+    grub-editenv "$GRUBENV" set \
+        gaia_boot_ok="1" \
+        gaia_fallback_entry="$FALLBACK_ENTRY" \
+        gaia_last_good_kernel="$CURRENT_KVER" >/dev/null 2>&1 || true
+
+    if [ -n "$FALLBACK_TRIGGERED" ] || [ -n "$LAST_CRASH" ]; then
+        grub-editenv "$GRUBENV" unset gaia_fallback_triggered gaia_last_crash >/dev/null 2>&1 || true
+    fi
+fi
+
+# 3. Se houve fallback automatico ou crash capturado pela BSOD, registrar e notificar
+if [ "$FALLBACK_TRIGGERED" = "1" ] || [ -n "$LAST_CRASH" ]; then
+    SUMMARY="Gaia OS recuperou-se de uma falha critica! Kernel atual em execucao: ${CURRENT_KVER}."
+    if [ "$FALLBACK_TRIGGERED" = "1" ]; then
+        SUMMARY="${SUMMARY} Fallback automatico do GRUB foi acionado."
+    fi
+    if [ -n "$LAST_CRASH" ] && [ -f "$CRASH_DIR/$LAST_CRASH" ]; then
+        STOP_LINE="$(grep -m1 'Codigo Parada' "$CRASH_DIR/$LAST_CRASH" 2>/dev/null || true)"
+        SUMMARY="${SUMMARY} Log forense: ${CRASH_DIR}/${LAST_CRASH}. ${STOP_LINE}"
+    fi
+    logger -t gaia-boot-health -p daemon.err "$SUMMARY"
+
+    # Tentar notificar o Francisco no Telegram via agent-notify (em background, sem travar boot)
+    AGENT_NOTIFY="/home/francisco/.local/bin/agent-notify"
+    if [ -x "$AGENT_NOTIFY" ]; then
+        (
+            sleep 15
+            su - francisco -c "$(printf '%q' "$AGENT_NOTIFY") --level warning --title 'Gaia OS Recuperacao Pos-BSOD' $(printf '%q' "$SUMMARY")" >/dev/null 2>&1 || true
+        ) &
+    fi
+fi
+
+echo "[gaia-boot-health] Boot saudavel confirmado (Kernel: $CURRENT_KVER | Fallback GRUB: $FALLBACK_KVER)"

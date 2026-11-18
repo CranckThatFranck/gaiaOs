@@ -10,7 +10,7 @@ Este repositório centraliza a evolução autônoma, blindagem de segurança, ot
 
 | Prioridade | Alvo / Componente | CVEs Associados | Severidade | Risco Específico na Máquina (`francisco-nv55c`) | Status no Gaia OS |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **P1 (Crítica)** | **Linux Kernel IPv4 TCP / MPTCP** (`6.1.0-53`, `6.1.0-54` e `6.1.0-55`) | **CVE-2026-98432** | **CVSS 9.8 (Critical)** | *Use-After-Free (UAF)* por condição de corrida no handshake TCP (`tcp_v4_conn_request` / `ireq_opt` liberado via `kfree()` concorrente a leitor RCU) e listeners MPTCP. A máquina tinha portas expostas e `net.mptcp.enabled = 1`. | **Mitigado & Testado na camada Raw Prerouting (Kernel `6.1.192-1`)** |
+| **P1 (Crítica)** | **Linux Kernel IPv4 TCP / MPTCP & ext4** (`6.1.0-54` e `6.1.0-56`) | **CVE-2026-98432**, **CVE-2026-99288**, **Debian Bug #1154101** | **CVSS 9.8 (Critical)** | *Use-After-Free (UAF)* no handshake TCP (`ireq_opt`) e regressão crítica `NULL folio dereference` no ext4 (`mballoc`) do kernel `6.1.0-55` (`6.1.192-1`). | **Kernel `6.1.0-56-amd64` (`6.1.192-2`) corrigido + Netfilter Raw Shield + BSOD Fallback** |
 | **P2 (Alta)** | **Node.js Runtimes** (`node:zlib`, `node:dns`, `node:tls`) | **CVE-2026-111497** (*Node2Shell*), **CVE-2026-105482**, **CVE-2026-105483**, **CVE-2026-106069**, **CVE-2026-106072** | **CVSS 9.2 (Critical)** | Runtime global atualizado para **`v22.23.5`** e runtime embutido do Codex atualizado para **`v24.22.1`** (proteção contra escrita fora de limites no decodificador Brotli e bypass de TLS/DNS). | **Corrigido (`v22.23.5` / `v24.22.1`) + Runtime Shield** |
 | **P3 (Alta — Privacidade)** | **Ativos Críticos, Chaves & Credenciais Locais** | Exposição de Segredos / Escalada Local | **Alta (Privacidade)** | Chaves PEM/SSH (`~/chaves_e_pem`, `~/.ssh`), credenciais cloud (`~/.aws`, `~/.config/gcloud`), segredos OAuth (`~/Downloads/client_secret_*.json` com permissão `0644`), `.env` de projetos e banco PostgreSQL exposto em `0.0.0.0:5432`. | **Blindado & Containers Órfãos Eliminados** |
 | **P4 (Preventiva)** | **PHP Runtime** (*PHP2Shell*) | **CVE-2026-109618**, **CVE-2026-109619**, **CVE-2026-115560** | **CVSS 9.2 (Critical)** | Nenhum runtime PHP está instalado no host. Política preventiva instalada em `/etc/gaiaos/security/99-gaia-php2shell-shield.ini` para bloquear `session.upload_progress` e execução arbitrária caso PHP seja adicionado futuramente. | **Prevenção Ativa** |
@@ -28,11 +28,11 @@ Este repositório centraliza a evolução autônoma, blindagem de segurança, ot
    * **`gaia-snapshot`:** Gerenciador de pontos de restauração e rollback instantâneo do sistema.
 3. **Serviços Enxutos, Segurança Contínua e Políticas Chrome (Etapa 3):**
    * **Chrome 157 (`157.0.8103.78-1`):** Políticas corporativas de descarte agressivo de abas (`HighEfficiencyModeEnabled: true` e `MemorySaverModeSavings: 2`).
-   * **Atualizações de Segurança (Nov/2026):** Kernel `6.1.0-55-amd64` (`6.1.192-1`), OpenSSL `3.0.22-1~deb12u2`, `libssh-4` `0.10.6-0+deb12u3`, `libbrotli1` `1.0.9-2+deb12u1`, `ca-certificates` `20250419~deb12u2`, `postgresql-client-15` `15.20`, `nodejs` `22.23.5`.
+   * **Atualizações de Segurança (Nov/2026):** Kernel **`6.1.0-56-amd64` (`6.1.192-2`, correção do Debian Bug #1154101 no ext4)** substituindo o defeituoso `6.1.0-55-amd64` (`6.1.192-1`), OpenSSL `3.0.22-1~deb12u2`, `libssh-4` `0.10.6-0+deb12u3`, `libbrotli1` `1.0.9-2+deb12u1`, `ca-certificates` `20250419~deb12u2`, `postgresql-client-15` `15.20`, `nodejs` `22.23.5`.
    * **Docker:** Configurado em **Socket Activation** (`docker.socket`), liberando ~150 MB de RAM quando inativo.
    * **Serviços Desativados:** `ModemManager` e `fwupd`.
-4. **Gaia Guardian AI (Etapa 2):**
-   * **C Daemon (`gaia-guardian`):** Monitor residente de baixo consumo (**~924 KB de RAM RSS**), monitorando temperatura `coretemp`, PSI e estado do MGLRU.
+4. **Gaia Guardian AI v1.1 (Etapa 2):**
+   * **C Daemon (`gaia-guardian`):** Monitor residente de baixo consumo (**< 1 MB de RAM RSS**), monitorando temperatura `coretemp`, PSI e estado do MGLRU. Calibrado na v1.1 para acionar reclaim apenas sob pressão real (`RAM >= 90% & < 512MB` ou `PSI >= 15`), respeitando o MGLRU e evitando churn no cache do `ext4`.
    * **Consultor Gemini 3.8 Flash (`gaia-gemini-advisor`):** Análise sob demanda ou por gatilho com consumo zero de RAM residente.
    * **Interface Gráfica (`gaia-guardian-ui`):** Dashboard PyQt5 sob demanda para visualização de métricas e tomada de decisões.
 5. **Limpeza e Reivindicação de Disco (Etapa 5):**
@@ -44,20 +44,26 @@ Este repositório centraliza a evolução autônoma, blindagem de segurança, ot
    * **Aplicativos & Recursos:** `dolphin`, `konsole`, `kate`, `kde-spectacle`, `plasma-discover`, `plasma-systemmonitor`, `plasma-nm`, `plasma-pa`, `plasma-vault`, `plasma-disks`, `plasma-thunderbolt`, `plasma-browser-integration`, `powerdevil`, `bluedevil`, `kscreen`, `xdg-desktop-portal-kde` e widget customizado `org.kde.plasma.catwalk`.
 8. **Integração Meta Muse Wonder 1.0 (Vertex AI Serverless & VS Code):**
    * Bridge local resiliente (`integrations/muse-wonder/gaia-muse-vertex-bridge.py` v2) com serialização anti-429, refresh automático 401 e adaptador OpenAI para Continue no VS Code (`Ctrl+L` / `Ctrl+I`) e CLI `muse-wonder` (ativação sob demanda).
+9. **Gaia BSOD — Tela Azul da Morte, Crash-Capture & Auto-Fallback GRUB (Etapa 6):**
+   * **Interceptação de Kernel Panic/Oops (`kexec -p`):** Reserva `crashkernel=192M` com imagem initramfs dedicada ultraleve (~9 MB), extrai o `dmesg`/`Call Trace` de `/proc/vmcore` via `makedumpfile`, salva relatório forense em `/var/log/gaia-crash/`, exibe **Tela Azul da Morte em tela cheia (`tty1` / `i915` KMS)** com o erro exato e **contagem regressiva de 30 segundos** para reinício automático (com atalhos `[R]` reiniciar, `[P]` pausar, `[S]` shell).
+   * **Fallback Automático de Kernel no GRUB (`/etc/grub.d/02_gaia_fallback`):** Caso um novo kernel falhe no boot ou acione a BSOD, o próximo boot cai automaticamente para o kernel estável anterior (`6.1.0-54-amd64`), enviando alerta pós-recuperação no Telegram.
+   * **Hook de Emergência Systemd (`gaia-emergency-bsod.service`):** Cobre também falhas em `emergency.target` com a mesma BSOD e preview seguro via `gaia-bsod-screen --demo`.
 
 ---
 
 ## Estrutura do Repositório
 
 * [`bin/gaia-sec-apply`](file:///home/francisco/Documentos/Projetos/GaiaOS/bin/gaia-sec-apply) — Instalador e aplicador idempotente zero-network de todas as correções no sistema operacional.
+* [`bin/gaia-recovery-apply`](file:///home/francisco/Documentos/Projetos/GaiaOS/bin/gaia-recovery-apply) — Instalador do subsistema Gaia BSOD (kexec crashkernel, Tela Azul 30s, auto-fallback GRUB e sysctl de estabilidade).
 * [`bin/gaia-pkg`](file:///home/francisco/Documentos/Projetos/GaiaOS/bin/gaia-pkg) — Construtor de pacotes `.deb` offline.
 * [`bin/gaia-snapshot`](file:///home/francisco/Documentos/Projetos/GaiaOS/bin/gaia-snapshot) — Utilitário de snapshots e rollback de configurações.
 * [`bin/gaia-lean-services`](file:///home/francisco/Documentos/Projetos/GaiaOS/bin/gaia-lean-services) — Gerenciador de serviços enxutos (Docker socket, ModemManager).
 * [`bin/gaia-agy-yolo.sh`](file:///home/francisco/Documentos/Projetos/GaiaOS/bin/gaia-agy-yolo.sh) — Definição do wrapper e atalho `agy --yolo`.
 * [`docs/DOSSIE_SISTEMA_GAIAOS.md`](file:///home/francisco/Documentos/Projetos/GaiaOS/docs/DOSSIE_SISTEMA_GAIAOS.md) — Dossiê técnico completo da arquitetura do Gaia OS.
-* [`guardian/src/gaia-guardian.c`](file:///home/francisco/Documentos/Projetos/GaiaOS/guardian/src/gaia-guardian.c) — Código-fonte em C nativo do daemon de monitoramento e anti-congelamento.
+* [`guardian/src/gaia-guardian.c`](file:///home/francisco/Documentos/Projetos/GaiaOS/guardian/src/gaia-guardian.c) — Código-fonte em C nativo do daemon de monitoramento e anti-congelamento (v1.1).
 * [`guardian/src/gaia-gemini-advisor`](file:///home/francisco/Documentos/Projetos/GaiaOS/guardian/src/gaia-gemini-advisor) — Consultor inteligente efêmero utilizando a API Gemini 3.8 Flash.
 * [`guardian/ui/gaia-guardian-ui`](file:///home/francisco/Documentos/Projetos/GaiaOS/guardian/ui/gaia-guardian-ui) — Interface gráfica em PyQt5 sob demanda.
 * [`performance/`](file:///home/francisco/Documentos/Projetos/GaiaOS/performance/) — Configurações de MGLRU, Chrome e `sysctl` de alta performance.
+* [`recovery/`](file:///home/francisco/Documentos/Projetos/GaiaOS/recovery/) — Subsistema Gaia BSOD (`gaia-bsod-screen`, `gaia-bsod-mkinitrd`, `gaia-kdump-arm`, `gaia-boot-health`, `02_gaia_fallback`, `99-gaia-stability.conf`).
 * [`security/`](file:///home/francisco/Documentos/Projetos/GaiaOS/security/) — Regras Netfilter, Node shield, PHP shield e sysctls de blindagem.
-* [`tests/verify-security.sh`](file:///home/francisco/Documentos/Projetos/GaiaOS/tests/verify-security.sh) — Suíte completa de 21 testes automatizados do sistema.
+* [`tests/verify-security.sh`](file:///home/francisco/Documentos/Projetos/GaiaOS/tests/verify-security.sh) — Suíte completa de 26 testes automatizados do sistema.

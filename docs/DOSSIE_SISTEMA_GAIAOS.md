@@ -2,10 +2,10 @@
 
 > **Distribuição:** Gaia OS 1.0 (Debian GNU/Linux 12 Bookworm Customizado)  
 > **Plataforma:** Gateway NV55C — Intel Core i7 M 640 @ 2.80GHz (Westmere/Arrandale, 2C/4T)  
-> **Kernel Ativo:** Linux `6.1.0-55-amd64` (`6.1.192-1`, 2026-11-14)  
-> **Memória:** 5.5 GiB DDR3 física + 6.0 GiB zRAM (compressão `zstd`)  
+> **Kernel Alvo:** Linux `6.1.0-56-amd64` (`6.1.192-2`, 2026-11-16 — Fallback automático: `6.1.0-54-amd64`)  
+> **Memória:** 5.5 GiB DDR3 física (`192 MiB` reservados p/ kexec BSOD) + 6.0 GiB zRAM (compressão `zstd`)  
 > **Interface Gráfica:** KDE Plasma `5.27.5` (Sessão ativa: **Wayland** via SDDM `0.19.0-5`, fallback X11)  
-> **Data de Atualização:** 16 de Novembro de 2026  
+> **Data de Atualização:** 18 de Novembro de 2026  
 
 ---
 
@@ -25,12 +25,13 @@ Diferente de distribuições convencionais que acumulam serviços em segundo pla
 
 Em Novembro de 2026, o sistema recebeu sucessivas atualizações do Debian Bookworm, Google Chrome, Node.js e ferramentas de desenvolvimento. Cada ciclo foi auditado para garantir compatibilidade com as mitigações e otimizações do Gaia OS:
 
-### 2.1. Kernel Linux (`6.1.190-1` -> `6.1.192-1` / `linux-image-6.1.0-55-amd64`)
-* **Linha do Tempo:** Atualizado para `6.1.0-54-amd64` (`6.1.190-1`) em 10/11/2026 e posteriormente para **`6.1.0-55-amd64` (`6.1.192-1`, build 2026-11-14)** em 16/11/2026 (junto com `linux-libc-dev` `6.1.192-1`).
-* **Changelog e CVEs:** Incorporou patches upstream para vulnerabilidades de ALSA, temporizadores, `mm/vmscan` (CVE-2026-89753), `mm/migrate` (CVE-2026-89756), `memcg` (CVE-2026-89752), NFS/NFSD e MPTCP syncookies (CVE-2026-97568).
-* **Diagnóstico de MGLRU e zRAM:** A inspeção do `/boot/config-6.1.0-55-amd64` confirmou que `CONFIG_LRU_GEN=y` e `# CONFIG_LRU_GEN_ENABLED is not set` (e `CONFIG_ZRAM=m` com `CONFIG_ZRAM_WRITEBACK=y`). Sem nossa configuração persistente, o kernel inicializaria com o MGLRU desativado (`0x0000`).
-  * **Conclusão:** `/etc/tmpfiles.d/gaia-mglru.conf` e `/etc/sysctl.d/99-performance.conf` permanecem essenciais e ativos no boot, mantendo MGLRU em `0x0007` e zRAM em `6.0 GiB` (`zstd`).
-* **Escudo CVE-2026-98432:** O drop antecipado na tabela `raw` do Netfilter (`gaia-cve-2026-98432-shield.nft`) continua operacional no kernel `6.1.0-55-amd64` (comprovado via simulação real em `gaia-sec-verify`).
+### 2.1. Kernel Linux (`6.1.190-1` -> `6.1.192-1` [Regressão ext4] -> `6.1.192-2` / `linux-image-6.1.0-56-amd64`)
+* **Incidente no Kernel `6.1.0-55-amd64` (`6.1.192-1`):** Instalado em 16/11/2026, o pacote `6.1.192-1` introduziu uma regressão crítica upstream/Debian (**Debian Bug #1154101**: `ext4: NULL folio dereference in mballoc`), provocando `BUG: kernel NULL pointer dereference, address: 0000000000000000` (comprovado nos boots `-6` e `-1` do journald) e travamentos catastróficos no sistema de arquivos raiz `ext4` (`/dev/sda4`).
+* **Amplificador Secundário Identificado (`gaia-guardian` v1.0.1):** O daemon C acionava `drop_caches=1` e `compact_memory=1` a cada 2 minutos sempre que a RAM excedia 80% mesmo com `PSI = 0.0`, forçando recargas frequentes de cache de páginas/ext4. Corrigido na **v1.1.0** para atuar apenas sob pressão real (`RAM >= 90% & MemAvailable < 512MB` ou `PSI >= 15`).
+* **Correção Aplicada (`6.1.0-56-amd64` / `6.1.192-2`):** Instalado o kernel corrigido oficial do `bookworm-security` (`ext4: fix NULL folio dereference in mballoc (Closes: #1154101)`), mantendo todas as correções de segurança da série `6.1.192` (incluindo `CVE-2026-99288` *NoisyTCP*). O kernel defeituoso `6.1.0-55-amd64` foi purgado e o `6.1.0-54-amd64` (`6.1.190-1`) mantido como fallback automático verificado.
+* **Diagnóstico de MGLRU e zRAM:** O `/boot/config-6.1.0-56-amd64` confirma `CONFIG_LRU_GEN=y`, `CONFIG_ZRAM=m`, `CONFIG_KEXEC=y` e `CONFIG_CRASH_DUMP=y`. `/etc/tmpfiles.d/gaia-mglru.conf` e `/etc/sysctl.d/99-performance.conf` permanecem ativos no boot, mantendo MGLRU em `0x0007` e zRAM em `6.0 GiB` (`zstd`).
+* **Escudo CVE-2026-98432:** O drop antecipado na tabela `raw` do Netfilter (`gaia-cve-2026-98432-shield.nft`) continua 100% operacional.
+* **Subsistema Gaia BSOD & Auto-Fallback GRUB:** Implantado em `recovery/` + `bin/gaia-recovery-apply` com `crashkernel=192M`, `panic=30`, `oops=panic`, `softlockup_panic=1`, initramfs dedicada (~9 MB), captura de `vmcore` (`makedumpfile --dump-dmesg`) para `/var/log/gaia-crash/`, exibição em Tela Azul no `tty1` com contagem de 30 segundos e fallback automático do GRUB (`/etc/grub.d/02_gaia_fallback`) para o kernel estável anterior.
 
 ### 2.2. Pacotes Críticos de Segurança e Runtimes Atualizados (Novembro/2026)
 * **Node.js Global:** Atualizado de `22.23.3` -> `22.23.4` -> **`22.23.5-1nodesource1`** (mitigando CVE-2026-111497 *Node2Shell* e falhas TLS/DNS/Brotli). O script [`tests/verify-security.sh`](file:///home/francisco/Documentos/Projetos/GaiaOS/tests/verify-security.sh) foi corrigido para validar `>= 22.23.4` via `dpkg --compare-versions`.

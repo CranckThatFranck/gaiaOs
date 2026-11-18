@@ -1,0 +1,196 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# Gaia OS 1.0 - Tela Azul de Recuperacao (BSOD) com Auto-Reboot em 30s
+# Usado em:
+#   --emergency  : Hook automatico do systemd emergency.target / rescue.target
+#   --show-last  : Exibe o ultimo relatorio salvo em /var/log/gaia-crash/
+#   --demo       : Simulacao interativa segura no terminal (NAO reinicia o PC)
+# ==============================================================================
+set -u
+
+MODE="${1:---demo}"
+COUNTDOWN="${GAIA_BSOD_TIMEOUT:-30}"
+CRASH_DIR="/var/log/gaia-crash"
+
+STOP_CODE="ERRO CRITICO DO SISTEMA OPERACIONAL"
+KERNEL_VER="$(uname -r 2>/dev/null || echo 'desconhecido')"
+TIMESTAMP="$(date '+%Y-%m-%d %H:%M:%S %Z' 2>/dev/null || echo 'N/A')"
+SAVED_LOG="Nenhum relatorio salvo em disco ainda"
+FALLBACK_INFO="Verifique GRUB / kernel estavel de fallback"
+TRACE_LINES=""
+DO_REBOOT=0
+
+case "$MODE" in
+    --emergency)
+        DO_REBOOT=1
+        mkdir -p "$CRASH_DIR" 2>/dev/null || true
+        LOG_FILE="$CRASH_DIR/emergency-$(date +%Y%m%d-%H%M%S).log"
+        {
+            echo "=== GAIA OS EMERGENCY FAILURE REPORT ==="
+            echo "Timestamp : $TIMESTAMP"
+            echo "Kernel    : $KERNEL_VER"
+            echo "--- Failed Systemd Units ---"
+            systemctl --failed --no-pager --plain 2>/dev/null || true
+            echo "--- Recent Critical Journal Entries ---"
+            journalctl -b -p 0..3 -n 40 --no-pager 2>/dev/null || dmesg | tail -n 40
+        } > "$LOG_FILE" 2>/dev/null && {
+            ln -sf "$LOG_FILE" "$CRASH_DIR/latest.log" 2>/dev/null || true
+            SAVED_LOG="$LOG_FILE"
+        }
+        FAILED_UNIT="$(systemctl --failed --no-legend --plain 2>/dev/null | head -n 1 | awk '{print $1}')"
+        if [ -n "$FAILED_UNIT" ]; then
+            STOP_CODE="SYSTEMD_EMERGENCY_FAILURE ($FAILED_UNIT)"
+        else
+            STOP_CODE="SYSTEMD_EMERGENCY_TARGET_REACHED"
+        fi
+        TRACE_LINES="$(journalctl -b -p 0..3 -n 12 --no-pager -o short 2>/dev/null || dmesg | tail -n 12)"
+        if [ -f /etc/gaiaos/fallback-kernel.conf ]; then
+            # shellcheck disable=SC1091
+            source /etc/gaiaos/fallback-kernel.conf 2>/dev/null || true
+            if [ -n "${FALLBACK_GRUB_ENTRY:-}" ] && command -v grub-editenv >/dev/null 2>&1; then
+                grub-editenv /boot/grub/grubenv set next_entry="$FALLBACK_GRUB_ENTRY" gaia_fallback_triggered=1 2>/dev/null || true
+                FALLBACK_INFO="GRUB armado para fallback automatico: ${FALLBACK_KERNEL_VER:-kernel anterior}"
+            fi
+        fi
+        ;;
+    --show-last)
+        DO_REBOOT=0
+        COUNTDOWN=15
+        if [ -f "$CRASH_DIR/latest.log" ]; then
+            SAVED_LOG="$(readlink -f "$CRASH_DIR/latest.log" 2>/dev/null || echo "$CRASH_DIR/latest.log")"
+            STOP_CODE="$(grep -m1 -E 'BUG:|Kernel panic|Oops:|general protection fault|soft lockup|hard LOCKUP|SYSTEMD_EMERGENCY' "$SAVED_LOG" 2>/dev/null | cut -c1-90)"
+            [ -z "$STOP_CODE" ] && STOP_CODE="CRASH_REPORT_LOADED"
+            TRACE_LINES="$(grep -A 14 -E 'BUG:|Kernel panic|Oops:|RIP:|Call Trace:|--- Failed|--- Recent' "$SAVED_LOG" 2>/dev/null | head -n 16)"
+            [ -z "$TRACE_LINES" ] && TRACE_LINES="$(tail -n 16 "$SAVED_LOG")"
+        else
+            STOP_CODE="NENHUM_CRASH_REGISTRADO"
+            TRACE_LINES="Nenhum relatorio de falha critica encontrado em $CRASH_DIR."
+        fi
+        ;;
+    --demo|*)
+        DO_REBOOT=0
+        COUNTDOWN=10
+        STOP_CODE="BUG: kernel NULL pointer dereference, address: 0000000000000000 [SIMULACAO]"
+        SAVED_LOG="/var/log/gaia-crash/demo-preview.log (modo simulacao segura)"
+        if [ -f /etc/gaiaos/fallback-kernel.conf ]; then
+            # shellcheck disable=SC1091
+            source /etc/gaiaos/fallback-kernel.conf 2>/dev/null || true
+            FALLBACK_INFO="Fallback automatico configurado -> Linux ${FALLBACK_KERNEL_VER:-6.1.0-54-amd64}"
+        else
+            FALLBACK_INFO="Fallback automatico configurado -> Linux 6.1.0-54-amd64"
+        fi
+        TRACE_LINES="RIP: 0010:ext4_mb_load_buddy_gfp+0x1a4/0x3f0 [ext4]
+Call Trace:
+ <TASK>
+ ext4_mb_find_by_goal+0x7c/0x2e0 [ext4]
+ ext4_mb_regular_allocator+0x3b2/0xc10 [ext4]
+ ext4_mb_new_blocks+0x6f4/0x1010 [ext4]
+ ext4_ext_map_blocks+0xc38/0x17e0 [ext4]
+ (Exemplo ilustrativo do Debian Bug #1154101 ja corrigido no kernel 6.1.0-56)"
+        ;;
+esac
+
+# ANSI: Fundo azul classico (44), texto branco brilhante (97), negrito (1)
+BLUE_BG="\033[44;97;1m"
+YELLOW_FG="\033[44;93;1m"
+CYAN_FG="\033[44;96;1m"
+RESET="\033[0m"
+
+cleanup_screen() {
+    printf "%b\033[?25h" "$RESET"
+}
+trap cleanup_screen EXIT
+
+render_bsod() {
+    local remaining="$1"
+    local paused="$2"
+    printf "%b\033[2J\033[H\033[?25l" "$BLUE_BG"
+    printf "\n"
+    printf "   =============================================================================\n"
+    printf "     :(   GAIA OS 1.0 — TELA AZUL DE RECUPERACAO DE FALHA CRITICA (BSOD)\n"
+    printf "   =============================================================================\n\n"
+    printf "   O sistema encontrou um erro grave no kernel ou na inicializacao e foi\n"
+    printf "   interrompido para proteger a integridade dos dados em disco (ext4).\n\n"
+    printf "   %bCODIGO DE PARADA:%b %s\n" "$YELLOW_FG" "$BLUE_BG" "$STOP_CODE"
+    printf "   %bKERNEL ATIVO    :%b %s\n" "$CYAN_FG" "$BLUE_BG" "$KERNEL_VER"
+    printf "   %bDATA / HORA     :%b %s\n" "$CYAN_FG" "$BLUE_BG" "$TIMESTAMP"
+    printf "   %bRELATORIO SALVO :%b %s\n" "$CYAN_FG" "$BLUE_BG" "$SAVED_LOG"
+    printf "   %bFALLBACK GRUB   :%b %s\n\n" "$CYAN_FG" "$BLUE_BG" "$FALLBACK_INFO"
+    printf "   --- DETALHES DO ERRO / STACK TRACE (PARA DIAGNOSTICO POSTERIOR) -------------\n"
+    while IFS= read -r line; do
+        printf "   %s\n" "${line:0:78}"
+    done <<< "$TRACE_LINES"
+    printf "   -----------------------------------------------------------------------------\n\n"
+
+    if [ "$paused" -eq 1 ]; then
+        printf "   %b[PAUSADO]%b Contagem pausada para leitura/foto. Pressione [R] Reiniciar, [S] Shell ou [Q] Sair.\n" "$YELLOW_FG" "$BLUE_BG"
+    else
+        if [ "$DO_REBOOT" -eq 1 ]; then
+            printf "   %bReiniciando automaticamente em %2ds...%b  [R] Reiniciar agora | [P] Pausar | [S] Shell\n" "$YELLOW_FG" "$remaining" "$BLUE_BG"
+        else
+            printf "   %b[MODO PREVIEW] Encerrando em %2ds...%b    [P] Pausar | [Q] Sair agora\n" "$YELLOW_FG" "$remaining" "$BLUE_BG"
+        fi
+    fi
+}
+
+PAUSED=0
+REM="$COUNTDOWN"
+
+while true; do
+    render_bsod "$REM" "$PAUSED"
+
+    KEY=""
+    if [ "$PAUSED" -eq 1 ]; then
+        IFS= read -rsn1 KEY || true
+    else
+        IFS= read -rsn1 -t 1 KEY || true
+    fi
+
+    case "${KEY,,}" in
+        p)
+            if [ "$PAUSED" -eq 0 ]; then PAUSED=1; else PAUSED=0; fi
+            continue
+            ;;
+        r)
+            if [ "$DO_REBOOT" -eq 1 ]; then
+                printf "\n   Reiniciando o sistema agora...\n"
+                sync
+                systemctl reboot --force 2>/dev/null || reboot -f
+            else
+                break
+            fi
+            ;;
+        s)
+            if [ "$DO_REBOOT" -eq 1 ]; then
+                cleanup_screen
+                clear
+                echo "[Gaia BSOD] Abrindo shell de emergencia (digite 'exit' ou 'reboot -f' ao concluir)..."
+                /bin/bash || /bin/sh
+                sync
+                reboot -f
+            else
+                break
+            fi
+            ;;
+        q)
+            if [ "$DO_REBOOT" -eq 0 ]; then
+                break
+            fi
+            ;;
+    esac
+
+    if [ "$PAUSED" -eq 0 ]; then
+        REM=$((REM - 1))
+        if [ "$REM" -le 0 ]; then
+            if [ "$DO_REBOOT" -eq 1 ]; then
+                printf "\n   Tempo esgotado. Reiniciando automaticamente para recuperacao...\n"
+                sync
+                systemctl reboot --force 2>/dev/null || reboot -f
+            fi
+            break
+        fi
+    fi
+done
+
+cleanup_screen
+clear
